@@ -6,35 +6,34 @@ agregando el nombre del fichero como primer elemento.
 import pandas as pd
 import csv
 import sys
+import glob
+import os
 
 xlsList = []
 
-first = True
+#first = True
 path = sys.argv[1]
 # iterate over excel files
-for i in range(2, len(sys.argv)):
-    inputExcelFile = sys.argv[i]
+for inputExcelFile in glob.iglob(path + "/*.xls"):
     print(f"Reading {inputExcelFile}")
 
     # Reading an excel file
-    excelFile = pd.read_excel(f'{path}/{inputExcelFile}')
-    print("Dropping headers")
-    if first:
-        excelFile = excelFile.drop(excelFile.index[[0, 6]])
-        first = False
-    else:
-        excelFile = excelFile.drop(excelFile.index[[0, 7]])
-    excelFile["Account"] = inputExcelFile
+    excelFile = pd.read_excel(inputExcelFile, header=7)
+    print(f'Columns: {excelFile.columns}')
+    print(f'Readed {excelFile.size} rows')
+    excelFile["Account"] = os.path.basename(inputExcelFile)[:-4]
     xlsList.append(excelFile)
-
     print(f"Done with {inputExcelFile}")
 
-print("Done with reading. Merging dataframes.")
+if xlsList:
+    print("Done with reading. Merging dataframes.")
+else:
+    listFiles = os.list(path)
+    print(f'No files read. Something\'s wrong with {path}. Contents: {listFiles}')
 
-merged = pd.DataFrame()
-
-for f in xlsList:
-    merged = merged.append(f, ignore_index=True)
+merged = pd.concat(xlsList)
+print(f'Destination structure: {merged.columns}')
+print(f'Total rows: {merged.size}')
 
 print("Writing CSV")
 
