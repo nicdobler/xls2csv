@@ -17,13 +17,13 @@ for i in range(1, len(sys.argv)):
 
     # Reading an excel file
     excelFile = pd.read_excel(inputExcelFile)
-    print('Dropping headers')
+    print("Dropping headers")
     if first:
         excelFile = excelFile.drop(excelFile.index[[0, 6]])
         first = False
     else:
         excelFile = excelFile.drop(excelFile.index[[0, 7]])
-    excelFile['Account'] = inputExcelFile
+    excelFile["Account"] = inputExcelFile
     xlsList.append(excelFile)
 
     print(f"Done with {inputExcelFile}")
@@ -38,7 +38,6 @@ for f in xlsList:
 print("Writing CSV")
 
 # Converting excel file into CSV file
-merged.to_csv("output.csv", index=None, header=True,
-              quoting=csv.QUOTE_NONNUMERIC)
+merged.to_csv("output.csv", index=None, header=True, quoting=csv.QUOTE_NONNUMERIC)
 
 print("Done")

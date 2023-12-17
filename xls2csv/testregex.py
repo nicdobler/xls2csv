@@ -11,10 +11,10 @@ patrones = [
     '^"Bizum De (.*)(?: Concepto ).*?"$',
     '^"Pago Recibo De (.*), Ref.*$',
     '^"Recibo (.*) Nº.*$',
-    '^"(Traspaso):.*"$'
-    ]
+    '^"(Traspaso):.*"$',
+]
 
-with open('file.csv') as myFile:
+with open("file.csv") as myFile:
     for line in myFile.readlines():
         matched = False
         for p in patrones:
