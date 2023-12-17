@@ -10,13 +10,14 @@ import sys
 xlsList = []
 
 first = True
+path = sys.argv[1]
 # iterate over excel files
-for i in range(1, len(sys.argv)):
+for i in range(2, len(sys.argv)):
     inputExcelFile = sys.argv[i]
     print(f"Reading {inputExcelFile}")
 
     # Reading an excel file
-    excelFile = pd.read_excel(inputExcelFile)
+    excelFile = pd.read_excel(f'{path}/{inputExcelFile}')
     print("Dropping headers")
     if first:
         excelFile = excelFile.drop(excelFile.index[[0, 6]])
@@ -38,6 +39,6 @@ for f in xlsList:
 print("Writing CSV")
 
 # Converting excel file into CSV file
-merged.to_csv("output.csv", index=None, header=True, quoting=csv.QUOTE_NONNUMERIC)
+merged.to_csv(f'{path}/output.csv', index=None, header=True, quoting=csv.QUOTE_NONNUMERIC)
 
 print("Done")
