@@ -1,6 +1,6 @@
 import re
 
-patrones = [
+patronesPayee = [
     '^"Compra (?:Internet En )?(.*), Tarj.*$',
     '^"Pago Movil En (.*), Tarj.*$',
     '^"Transaccion Contactless En (.*), Tarj.*$',
@@ -13,11 +13,22 @@ patrones = [
     '^"Recibo (.*) Nº.*$',
     '^"(Traspaso):.*"$',
 ]
+patronesConcepto = [
+    r'^"Compra (?:Internet En )?.*, (Tarj\. :.*)$',
+    r'^"Compra (?:Internet En )?.*, (Tarjeta \d*).*$',
+    r'^"Pago Movil En .*, (Tarj\. :.*)$',
+    r'^"Transaccion Contactless En .*, (Tarj\. :.*)$',
+    r'^"Transferencia (?:Inmediata )?A Favor De .* Concepto: (.*)"$',
+    r'^"Bizum A Favor De .* Concepto: (.*)"$',
+    r'^"Transferencia De .*, Concepto (.*)\.?"$',
+    r'^"Bizum De .* Concepto (.*)"$',
+    r'^"Traspaso: (.*)"$',
+]
 
 with open("file.csv") as myFile:
     for line in myFile.readlines():
         matched = False
-        for p in patrones:
+        for p in patronesConcepto:
             if matched:
                 break
             x = re.findall(p, line)
