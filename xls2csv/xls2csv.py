@@ -11,7 +11,6 @@ import os
 
 xlsList = []
 
-#first = True
 path = sys.argv[1]
 # iterate over excel files
 for inputExcelFile in glob.iglob(path + "/*.xls"):
