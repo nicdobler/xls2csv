@@ -12,9 +12,9 @@ import re
 from dateutil.parser import parse
 import hashlib
 
-def gen_transaction_id(row):
+def gen_transaction_id(concepto, importe, fecha):
     hasher = hashlib.sha256()
-    transaction = row['CONCEPTO'] + row['']
+    transaction = str(concepto) + str(importe) + str(fecha)
     stringified = transaction.encode("utf-8")
     hasher.update(stringified)
     return hasher.hexdigest()
@@ -55,47 +55,64 @@ def get_memo(concepto):
     ]
     notes = ""
     for p in patronesConcepto:
-        x = re.findall(p, concepto)
+        x = re.findall(p, str(concepto))
         if x:
             notes = x[0]
             break
     return notes.replace(',', ' ')
 
+xlsList = []
 
-inputExcelFile = sys.argv[1]
-accountName = os.path.basename(inputExcelFile)[:-4]
+path = sys.argv[1]
 
-print(f"Reading {inputExcelFile}")
+# iterate over excel files
+for inputExcelFile in glob.iglob(path + "/D*.xls"):
 
-# Reading an excel file
-excelFile = pd.read_excel(inputExcelFile, header=7, engine="xlrd")
-print(f'Columns: {excelFile.columns}')
-print(f'Columns: {excelFile.dtypes}')
+    accountName = os.path.basename(inputExcelFile)[:-4]
 
-print(f'Readed {excelFile.size} rows')
+    print(f"Reading {inputExcelFile}")
 
-print("Converting")
-csvFile = pd.DataFrame()
-csvFile["trxDate"]=pd.to_datetime(excelFile['FECHA VALOR'])
-csvFile["payee"]=excelFile['CONCEPTO'].apply(get_payee)
-csvFile["originalpayee"]=excelFile["CONCEPTO"].str.replace(",", "")
-csvFile["amount"]=excelFile["IMPORTE EUR"].abs()
-csvFile["trxType"]=excelFile["IMPORTE EUR"].apply(lambda x: "credit" if x >= 0 else "debit").astype('category')
-csvFile["category"]=""
-csvFile["reference"]=excelFile.apply(gen_transaction_id, axis=1)
-csvFile["labels"]=accountName
-csvFile['labels']=csvFile['labels'].astype('category')
-csvFile["notes"]=excelFile["CONCEPTO"].tostring().apply(get_memo)
+    excelFile = pd.read_excel(inputExcelFile, header=7, engine="xlrd")
+    print(f'Columns: {excelFile.columns}')
+    print(f'Columns: {excelFile.dtypes}')
+    print(f'Readed {excelFile.size} rows')
 
-print(f'CSV Columns: {csvFile.columns}')
-print(f'CSV Columns: {csvFile.dtypes}')
+    print("Converting")
+    csvFile = pd.DataFrame()
+    csvFile["trxDate"]=pd.to_datetime(excelFile['FECHA VALOR'])
+    csvFile["payee"]=excelFile['CONCEPTO'].apply(get_payee)
+    csvFile["originalpayee"]=excelFile["CONCEPTO"].str.replace(",", "")
+    csvFile["amount"]=excelFile["IMPORTE EUR"].abs()
+    csvFile["trxType"]=excelFile["IMPORTE EUR"].apply(lambda x: "credit" if x >= 0 else "debit").astype('category')
+    csvFile["category"]=""
+    csvFile["reference"]=gen_transaction_id(excelFile['CONCEPTO'], excelFile['IMPORTE EUR'], excelFile['FECHA VALOR'])
+    csvFile["labels"]=accountName
+    csvFile['memo']=excelFile['CONCEPTO'].apply(get_memo)
 
-print(f'CSV has {csvFile.size} rows')
+    #adding to converted files list
+    xlsList.append(csvFile)
 
-print("Writing CSV")
+if xlsList:
+    print("Done with reading. Merging dataframes.")
+else:
+    if os.access(path, os.R_OK):
+        listFiles = os.listdir(path)
+    else:
+        listFiles = "Path is not a directory"
+    print(f'No files read. Something\'s wrong with {path}. Contents: {listFiles}')
+    exit(1)
+
+merged = pd.concat(xlsList)
+
+output=f'{path}/Debit.csv'
+print("Writing CSV to " + output)
 
 # Converting excel file into CSV file
-dir=os.path.dirname(inputExcelFile)
-csvFile.to_csv(f'{dir}/{accountName}.csv', index=None, header=False, quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y')
+csvFile.to_csv(output, index=None, header=False, quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y')
+
+if os.access(output, os.R_OK):
+    print("File written ok")
+else:
+    print("Something went wrong")
 
 print("Done")
