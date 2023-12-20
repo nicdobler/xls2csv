@@ -1,5 +1,5 @@
 test:
-	poetry run pytest --verbose tests/
+	poetry run pytest -rP 
 
 lint:
 	poetry run flake8 --show-source
