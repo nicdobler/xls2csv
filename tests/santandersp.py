@@ -49,6 +49,7 @@ def get_payee(transaction):
             break
     return payee
 
+
 def get_transaction_type(transaction):
     concepto = transaction.get('CONCEPTO')
     patronesConcepto = [
@@ -87,4 +88,3 @@ mapping = {
     "class": itemgetter("class"),
     "id": gen_transaction_id,
 }
-

@@ -9,15 +9,7 @@ import sys
 import glob
 import os
 import re
-from dateutil.parser import parse
-import hashlib
 
-def gen_transaction_id(concepto, importe, fecha):
-    hasher = hashlib.sha256()
-    transaction = str(concepto) + str(importe) + str(fecha)
-    stringified = transaction.encode("utf-8")
-    hasher.update(stringified)
-    return hasher.hexdigest()
 
 def get_payee(concepto):
     patrones = [
@@ -41,6 +33,7 @@ def get_payee(concepto):
             break
     return payee.replace(',', ' ')
 
+
 def get_memo(concepto):
     patronesConcepto = [
         r'^Compra (?:Internet En )?.*, (Tarj\. :.*)$',
@@ -61,6 +54,7 @@ def get_memo(concepto):
             break
     return notes.replace(',', ' ')
 
+
 xlsList = []
 
 path = sys.argv[1]
@@ -79,17 +73,18 @@ for inputExcelFile in glob.iglob(path + "/D*.xls"):
 
     print("Converting")
     csvFile = pd.DataFrame()
-    csvFile["trxDate"]=pd.to_datetime(excelFile['FECHA VALOR'])
-    csvFile["payee"]=excelFile['CONCEPTO'].apply(get_payee)
-    csvFile["originalpayee"]=excelFile["CONCEPTO"].str.replace(",", "")
-    csvFile["amount"]=excelFile["IMPORTE EUR"].abs()
-    csvFile["trxType"]=excelFile["IMPORTE EUR"].apply(lambda x: "credit" if x >= 0 else "debit").astype('category')
-    csvFile["category"]=""
-    csvFile["reference"]=""
-    csvFile["labels"]=accountName
-    csvFile['memo']=excelFile['CONCEPTO'].apply(get_memo)
+    csvFile["trxDate"] = pd.to_datetime(excelFile['FECHA VALOR'])
+    csvFile["payee"] = excelFile['CONCEPTO'].apply(get_payee)
+    csvFile["originalpayee"] = excelFile["CONCEPTO"].str.replace(",", "")
+    csvFile["amount"] = excelFile["IMPORTE EUR"].abs()
+    csvFile["trxType"] = excelFile["IMPORTE EUR"].apply(
+        lambda x: "credit" if x >= 0 else "debit").astype('category')
+    csvFile["category"] = ""
+    csvFile["reference"] = ""
+    csvFile["labels"] = accountName
+    csvFile['memo'] = excelFile['CONCEPTO'].apply(get_memo)
 
-    #adding to converted files list
+    # adding to converted files list
     xlsList.append(csvFile)
 
 if xlsList:
@@ -99,16 +94,17 @@ else:
         listFiles = os.listdir(path)
     else:
         listFiles = "Path is not a directory"
-    print(f'No files read. Something\'s wrong with {path}. Contents: {listFiles}')
+    print(f'No files read in {path}. Contents: {listFiles}')
     exit(1)
 
 merged = pd.concat(xlsList)
 
-output=f'{path}/Debit.csv'
+output = f'{path}/Debit.csv'
 print("Writing CSV to " + output)
 
 # Converting excel file into CSV file
-merged.to_csv(output, index=None, header=False, quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y')
+merged.to_csv(output, index=None, header=False,
+              quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y')
 
 if os.access(output, os.R_OK):
     print("File written ok")
