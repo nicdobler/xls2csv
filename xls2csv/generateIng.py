@@ -46,7 +46,7 @@ path = sys.argv[1]
 # iterate over excel files
 for inputExcelFile in glob.iglob(path + "/Movements.xls"):
 
-    accountName = "Ing Ele"
+    accountName = "IngEle"
 
     print(f"Reading {inputExcelFile}")
 
@@ -62,7 +62,7 @@ for inputExcelFile in glob.iglob(path + "/Movements.xls"):
     csvFile["payee"] = excelFile['DESCRIPCIÓN'].apply(get_payee)
     csvFile["originalpayee"] = excelFile["DESCRIPCIÓN"].str.replace(",", "")
     csvFile["amount"] = pd.to_numeric(excelFile["IMPORTE (€)"]).abs()
-    csvFile["trxType"] = csvFile["amount"].apply(
+    csvFile["trxType"] = pd.to_numeric(excelFile["IMPORTE (€)"]).apply(
         lambda x: "credit" if x >= 0 else "debit").astype('category')
     csvFile["category"] = ""
     csvFile["reference"] = ""
