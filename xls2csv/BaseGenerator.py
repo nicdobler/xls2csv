@@ -20,7 +20,7 @@ class BaseGenerator:
         with xlrd.open_workbook(inputExcelFile, on_demand=True) as workbook:
             worksheet = workbook.sheet_by_index(0)
             row = int(self.nameLocation[1])-1
-            column = string.ascii_lowercase.index(self.nameLocation[0])
+            column = string.ascii_lowercase.index(self.nameLocation[0].lower())
             print(f"Getting account name from {self.nameLocation} --> {column}:{row}")
             accountName = worksheet.cell(row, column).value
         return accountName
