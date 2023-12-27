@@ -11,8 +11,6 @@ import string
 
 class BaseGenerator:
 
-    path = ""
-
     def map(self, excelFile, name):
         pass
 
@@ -21,12 +19,11 @@ class BaseGenerator:
             worksheet = workbook.sheet_by_index(0)
             row = int(self.nameLocation[1])-1
             column = string.ascii_lowercase.index(self.nameLocation[0].lower())
-            print(f"Getting account name from {self.nameLocation} --> {column}:{row}")
             accountName = worksheet.cell(row, column).value
         return accountName
 
     def generate(self):
-        fileMask = path + "/" + self.mask
+        fileMask = self.path + "/" + self.mask
         print("Generating files in " + fileMask)
         xlsList = []
 
@@ -36,25 +33,28 @@ class BaseGenerator:
 
             name = self.readAccountName(inputExcelFile)
 
-            excelFile = pd.read_excel(inputExcelFile, header=self.firstRow, engine="xlrd")
-            print(f'Columns: {excelFile.columns}')
-            print(f'Columns: {excelFile.dtypes}')
-            print(f'Readed {excelFile.size} rows')
+            excelFile = pd.read_excel(inputExcelFile,
+                                      header=self.firstRow, engine="xlrd")
+            #print(f'Columns: {excelFile.columns}')
+            #print(f'Columns: {excelFile.dtypes}')
+            #print(f'Readed {excelFile.size} rows')
 
-            print("Converting")
-            csvDF = self.map(name)
+            print(f"Converting {inputExcelFile} for account {name}")
+            csvDF = self.map(excelFile, name)
+            print("Converted")
 
             # adding to converted files list
             xlsList.append(csvDF)
 
         if xlsList:
-            print("Done with reading. Merging dataframes.")
-            merged = pd.concat(xlsList)
+            print("Finished account type")
+            return xlsList
         else:
             merged = []
 
         return merged
 
-    def __init__(self, mask, firstRow):
+    def __init__(self, path, mask, firstRow):
+        self.path = path
         self.mask = mask
         self.firstRow = firstRow

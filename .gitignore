@@ -1,2 +1,5 @@
 xls2csv/.DS_Store
 xls2csv/__pycache__
+inout/AccountImport.csv
+inout/Credito.xls
+inout/Debito.xls

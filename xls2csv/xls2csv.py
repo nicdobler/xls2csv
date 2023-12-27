@@ -2,7 +2,6 @@
 Main algorythm
 '''
 
-import BaseGenerator
 import SantanderCredit2CSV as sc
 import SantanderDebit2CSV as sd
 import IngDirect2CSV as id
@@ -11,28 +10,33 @@ import pandas as pd
 import csv
 import os
 
-BaseGenerator.path = os.path.abspath(sys.argv[1])
+path = os.path.abspath(sys.argv[1])
 
-print(f"Processing {BaseGenerator.path}")
-if os.access(BaseGenerator.path, os.R_OK):
-    print("Dir content is:")
-    listFiles = os.listdir(BaseGenerator.path)
-else:
+print(f"Processing {path}")
+if not os.access(path, os.R_OK):
     print("Path is not readable")
     exit(1)
 
 bankAccountList = []
 
-sde = sd.SantanderDebit2CSV()
-bankAccountList += sde.generate()
-scr = sc.SantanderCredit2CSV()
-bankAccountList += scr.generate()
-idi = id.IngDirect2CSV()
-bankAccountList += idi.generate()
+sde = sd.SantanderDebit2CSV(path)
+for a in sde.generate():
+    bankAccountList.append(a)
 
+
+scr = sc.SantanderCredit2CSV(path)
+for a in scr.generate():
+    bankAccountList.append(a)
+
+idi = id.IngDirect2CSV(path)
+for a in idi.generate():
+    bankAccountList.append(a)
+
+print("All files read. Merging.")
 merged = pd.concat(bankAccountList)
+print("Merge OK")
 
-output = f'{BaseGenerator.path}/AccountImport.csv'
+output = f'{path}/AccountImport.csv'
 print("Writing CSV to " + output)
 
 # Converting excel file into CSV file

@@ -4,14 +4,14 @@ agregando el nombre del fichero como primer elemento.
 """
 import BaseGenerator as bg
 import pandas as pd
-import csv
+
 
 class SantanderCredit2CSV(bg.BaseGenerator):
 
-
-    def map(self, excelFile):
+    def map(self, excelFile, accountName):
         csvFile = pd.DataFrame()
-        csvFile["trxDate"] = pd.to_datetime(excelFile['FECHA OPERACIÓN'])
+        csvFile["trxDate"] = pd.to_datetime(excelFile['FECHA OPERACIÓN'],
+                                            format="%d/%m/%Y")
         csvFile["payee"] = excelFile['CONCEPTO'].str.replace(",", "")
         csvFile["originalpayee"] = excelFile["CONCEPTO"].str.replace(",", "")
         csvFile["amount"] = excelFile["IMPORTE EUR"].abs()
@@ -19,12 +19,10 @@ class SantanderCredit2CSV(bg.BaseGenerator):
             lambda x: "credit" if x >= 0 else "debit").astype('category')
         csvFile["category"] = ""
         csvFile["reference"] = ""
-        csvFile["labels"] = self.accountName
+        csvFile["labels"] = accountName
         csvFile['memo'] = ""
         return csvFile
 
-    def __init__(self):
-        self.nameLocation = 'C1'
-        super(SantanderCredit2CSV, self).__init__("C*.xls", 7)
-
-
+    def __init__(self, path):
+        self.nameLocation = 'B1'
+        super(SantanderCredit2CSV, self).__init__(path, "C*.xls", 7)
