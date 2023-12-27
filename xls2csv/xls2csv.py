@@ -9,6 +9,7 @@ import sys
 import pandas as pd
 import csv
 import os
+# import dbm
 
 path = os.path.abspath(sys.argv[1])
 
@@ -34,7 +35,18 @@ for a in idi.generate():
 
 print("All files read. Merging.")
 merged = pd.concat(bankAccountList)
-print("Merge OK")
+print("Merge OK. Filtering transactions.")
+
+'''
+print(merged.count())
+
+with dbm.open('transactions', 'c') as db:
+    keys = db.keys()
+    existing = merged[merged.index.isin(keys)]
+    print(existing.count())
+
+print(f"Will write {newRecords.count} of {merged.count}")
+'''
 
 output = f'{path}/AccountImport.csv'
 print("Writing CSV to " + output)
@@ -47,5 +59,7 @@ if os.access(output, os.R_OK):
     print("File written ok")
 else:
     print("Something went wrong")
+
+print("Caching results")
 
 print("Done")
