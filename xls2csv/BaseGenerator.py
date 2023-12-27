@@ -1,0 +1,60 @@
+"""
+Convierte los excels pasados como parametros en un csv
+agregando el nombre del fichero como primer elemento.
+"""
+# importing pandas module
+import pandas as pd
+import glob
+import xlrd
+import string
+
+
+class BaseGenerator:
+
+    path = ""
+
+    def map(self, excelFile, name):
+        pass
+
+    def readAccountName(self, inputExcelFile):
+        with xlrd.open_workbook(inputExcelFile, on_demand=True) as workbook:
+            worksheet = workbook.sheet_by_index(0)
+            row = int(self.nameLocation[1])-1
+            column = string.ascii_lowercase.index(self.nameLocation[0])
+            print(f"Getting account name from {self.nameLocation} --> {column}:{row}")
+            accountName = worksheet.cell(row, column).value
+        return accountName
+
+    def generate(self):
+        fileMask = path + "/" + self.mask
+        print("Generating files in " + fileMask)
+        xlsList = []
+
+        # iterate over excel files
+        for inputExcelFile in glob.iglob(fileMask):
+            print(f"Reading {inputExcelFile}")
+
+            name = self.readAccountName(inputExcelFile)
+
+            excelFile = pd.read_excel(inputExcelFile, header=self.firstRow, engine="xlrd")
+            print(f'Columns: {excelFile.columns}')
+            print(f'Columns: {excelFile.dtypes}')
+            print(f'Readed {excelFile.size} rows')
+
+            print("Converting")
+            csvDF = self.map(name)
+
+            # adding to converted files list
+            xlsList.append(csvDF)
+
+        if xlsList:
+            print("Done with reading. Merging dataframes.")
+            merged = pd.concat(xlsList)
+        else:
+            merged = []
+
+        return merged
+
+    def __init__(self, mask, firstRow):
+        self.mask = mask
+        self.firstRow = firstRow
