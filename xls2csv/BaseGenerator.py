@@ -35,9 +35,9 @@ class BaseGenerator:
 
             excelFile = pd.read_excel(inputExcelFile,
                                       header=self.firstRow, engine="xlrd")
-            #print(f'Columns: {excelFile.columns}')
-            #print(f'Columns: {excelFile.dtypes}')
-            #print(f'Readed {excelFile.size} rows')
+            # print(f'Columns: {excelFile.columns}')
+            # print(f'Columns: {excelFile.dtypes}')
+            # print(f'Readed {excelFile.size} rows')
 
             print(f"Converting {inputExcelFile} for account {name}")
             csvDF = self.map(excelFile, name)
