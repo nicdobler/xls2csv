@@ -7,6 +7,14 @@ import pandas as pd
 import glob
 import xlrd
 import string
+import hashlib
+
+
+def gen_transaction_id(transaction):
+    hasher = hashlib.sha256()
+    trx = ','.join([str(item) for item in transaction.values])
+    hasher.update(trx.encode("utf-8"))
+    return hasher.hexdigest()
 
 
 class BaseGenerator:
@@ -42,6 +50,11 @@ class BaseGenerator:
             print(f"Converting {inputExcelFile} for account {name}")
             csvDF = self.map(excelFile, name)
             print("Converted")
+
+            csvDF['trxId'] = csvDF[['trxDate', 'originalpayee',
+                                    "amount", "labels"]] \
+                .apply(gen_transaction_id, axis=1)
+            csvDF.set_index('trxId', inplace=True)
 
             # adding to converted files list
             xlsList.append(csvDF)
