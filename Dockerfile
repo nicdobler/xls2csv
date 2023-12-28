@@ -8,4 +8,4 @@ RUN pip install poetry && poetry install --no-root
 
 COPY . .
 
-ENTRYPOINT [ "/bin/bash", "run.sh" ]
+ENTRYPOINT [ "poetry", "run", "python", "xls2csv/xls2csv.py" /inout" ]
