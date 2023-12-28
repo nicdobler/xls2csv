@@ -40,7 +40,7 @@ class IngDirect2CSV(bg.BaseGenerator):
     def readAccountName(self, inputExcelFile):
         return "INGEle", "debit"
 
-    def map(self, excelFile, accountName):
+    def map(self, excelFile, accountType, accountName):
         excelFile = excelFile[:-1]
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['F. VALOR'],
