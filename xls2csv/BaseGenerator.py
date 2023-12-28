@@ -54,7 +54,7 @@ class BaseGenerator:
             csvDF['trxId'] = csvDF[['trxDate', 'originalpayee',
                                     "amount", "labels"]] \
                 .apply(gen_transaction_id, axis=1)
-            csvDF.set_index('trxId', inplace=True)
+            # csvDF.set_index('trxId', inplace=True)
 
             # adding to converted files list
             xlsList.append(csvDF)

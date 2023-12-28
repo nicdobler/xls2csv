@@ -42,22 +42,27 @@ dbh = db.DBHandler(path + "/database")
 
 newTrx = dbh.get_new_transactions(merged)
 
-print(f"Will write {len(newTrx.index)} of {len(merged.index)}")
+if len(newTrx.index) > 0:
+    print(f"Will write {len(newTrx.index)} of {len(merged.index)}")
 
-output = f'{path}/AccountImport.csv'
-print("Writing CSV to " + output)
+    output = f'{path}/AccountImport.csv'
+    print("Writing CSV to " + output)
 
-# Converting excel file into CSV file
-newTrx.to_csv(output, index=None, header=False,
-              quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y')
+    # Converting excel file into CSV file
+    csvFile = newTrx.drop("trxId", axis=1)
+    csvFile.to_csv(output, index=None, header=False,
+                   quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y')
 
-dbh.update_new_trx(newTrx)
+    if os.access(output, os.R_OK):
+        print("File written ok")
+    else:
+        print("Something went wrong")
 
-if os.access(output, os.R_OK):
-    print("File written ok")
+    print("Caching results")
+    dbh.update_new_trx(newTrx)
 else:
-    print("Something went wrong")
+    print("No new transacctions to write.")
 
-print("Caching results")
+dbh.removeOldTrx(90)
 
 print("Done")
