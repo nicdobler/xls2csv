@@ -9,7 +9,6 @@ import sys
 import pandas as pd
 import csv
 import os
-# import dbm
 
 path = os.path.abspath(sys.argv[1])
 
@@ -28,32 +27,32 @@ idi = id.IngDirect2CSV(path)
 for a in idi.generate():
     bankAccountList.append(a)
 
-print("All files read. Merging.")
+print("All files read. Merging accounts.")
 merged = pd.concat(bankAccountList)
-print("Merge OK. Filtering transactions.")
+print(f"There are {len(merged.index)} transactions. Removing duplicates.")
+merged = merged.drop_duplicates()
+print(f"There are {len(merged.index)}. Removing already read transactions.")
 
 dbh = db.DBHandler(path + "/database")
+merged = dbh.get_new_transactions(merged)
 
-newTrx = dbh.get_new_transactions(merged)
-
-if len(newTrx.index) > 0:
-    print(f"Will write {len(newTrx.index)} of {len(merged.index)}")
-
+if len(merged.index) > 0:
     output = f'{path}/AccountImport.csv'
-    print("Writing CSV to " + output)
+    total = len(merged.index)
+    print(f"There are {total} new transactions. Writing CSV to {output}")
 
     # Converting excel file into CSV file
-    csvFile = newTrx.drop("trxId", axis=1)
+    csvFile = merged.drop("trxId", axis=1)
     csvFile.to_csv(output, index=None, header=False,
                    quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y')
 
     if os.access(output, os.R_OK):
-        print("File written ok")
+        print("File written ok.")
     else:
-        print("Something went wrong")
+        print("Something went wrong.")
 
     print("Caching results")
-    dbh.update_new_trx(newTrx)
+    dbh.update_new_trx(merged)
 else:
     print("No new transacctions to write.")
 
