@@ -1,3 +1,4 @@
+ARGS := $(filter-out $@,$(MAKEFLAGS))
 test:
 	poetry run pytest -rP 
 
@@ -14,4 +15,4 @@ build:
 	docker build --tag xls2csv .
 
 run:
-	docker run xls2csv $(file)
+	docker run -v ~/Downloads/Banks:/inout xls2csv $(ARGS)
