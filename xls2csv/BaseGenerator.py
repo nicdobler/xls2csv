@@ -32,24 +32,28 @@ class BaseGenerator:
         for inputExcelFile in glob.iglob(fileMask):
             print(f"Reading {inputExcelFile}")
 
-            accountName, accountType = self.readAccountName(inputExcelFile)
+            try:
+                accountName, accountType = self.readAccountName(inputExcelFile)
 
-            excelFile = pd.read_excel(inputExcelFile,
-                                      header=self.firstRow, engine="xlrd")
-            # print(f'Columns: {excelFile.columns}')
-            # print(f'Columns: {excelFile.dtypes}')
-            # print(f'Readed {excelFile.size} rows')
+                excelFile = pd.read_excel(inputExcelFile,
+                                          header=self.firstRow, engine="xlrd")
+                # print(f'Columns: {excelFile.columns}')
+                # print(f'Columns: {excelFile.dtypes}')
+                # print(f'Readed {excelFile.size} rows')
 
-            print(f"Converting {inputExcelFile} for account {accountName}")
-            csvDF = self.map(excelFile, accountType, accountName)
+                print(f"Converting {inputExcelFile} for account {accountName}")
+                csvDF = self.map(excelFile, accountType, accountName)
 
-            csvDF['trxId'] = csvDF[['trxDate', 'originalpayee',
-                                    "amount", "labels"]] \
-                .apply(gen_transaction_id, axis=1)
-            # csvDF.set_index('trxId', inplace=True)
+                csvDF['trxId'] = csvDF[['trxDate', 'originalpayee',
+                                        "amount", "labels"]] \
+                    .apply(gen_transaction_id, axis=1)
+                # csvDF.set_index('trxId', inplace=True)
 
-            # adding to converted files list
-            xlsList.append(csvDF)
+                # adding to converted files list
+                xlsList.append(csvDF)
+            except Exception as e:
+                print("Error reading file.")
+                print(e)
 
         if xlsList:
             print("Finished account type")
