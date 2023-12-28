@@ -5,6 +5,7 @@ Main algorythm
 import SantanderCredit2CSV as sc
 import SantanderDebit2CSV as sd
 import IngDirect2CSV as id
+import DBHandler as db
 import sys
 import pandas as pd
 import csv
@@ -37,23 +38,20 @@ print("All files read. Merging.")
 merged = pd.concat(bankAccountList)
 print("Merge OK. Filtering transactions.")
 
-'''
-print(merged.count())
+dbh = db.DBHandler(path + "/database")
 
-with dbm.open('transactions', 'c') as db:
-    keys = db.keys()
-    existing = merged[merged.index.isin(keys)]
-    print(existing.count())
+newTrx = dbh.get_new_transactions(merged)
 
-print(f"Will write {newRecords.count} of {merged.count}")
-'''
+print(f"Will write {len(newTrx.index)} of {len(merged.index)}")
 
 output = f'{path}/AccountImport.csv'
 print("Writing CSV to " + output)
 
 # Converting excel file into CSV file
-merged.to_csv(output, index=None, header=False,
+newTrx.to_csv(output, index=None, header=False,
               quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y')
+
+dbh.update_new_trx(newTrx)
 
 if os.access(output, os.R_OK):
     print("File written ok")
