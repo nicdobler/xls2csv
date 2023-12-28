@@ -2,8 +2,7 @@
 Main algorythm
 '''
 
-import SantanderCredit2CSV as sc
-import SantanderDebit2CSV as sd
+import Santander2CSV as san
 import IngDirect2CSV as id
 import DBHandler as db
 import sys
@@ -21,13 +20,8 @@ if not os.access(path, os.R_OK):
 
 bankAccountList = []
 
-sde = sd.SantanderDebit2CSV(path)
+sde = san.Santander2CSV(path)
 for a in sde.generate():
-    bankAccountList.append(a)
-
-
-scr = sc.SantanderCredit2CSV(path)
-for a in scr.generate():
     bankAccountList.append(a)
 
 idi = id.IngDirect2CSV(path)
@@ -63,6 +57,6 @@ if len(newTrx.index) > 0:
 else:
     print("No new transacctions to write.")
 
-dbh.removeOldTrx(90)
+dbh.removeOldTrx(365)
 
 print("Done")

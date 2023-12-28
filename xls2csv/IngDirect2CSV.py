@@ -38,7 +38,7 @@ def getMemo(series):
 class IngDirect2CSV(bg.BaseGenerator):
 
     def readAccountName(self, inputExcelFile):
-        return "INGEle"
+        return "INGEle", "debit"
 
     def map(self, excelFile, accountName):
         excelFile = excelFile[:-1]

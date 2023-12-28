@@ -5,8 +5,6 @@ agregando el nombre del fichero como primer elemento.
 # importing pandas module
 import pandas as pd
 import glob
-import xlrd
-import string
 import hashlib
 
 
@@ -23,12 +21,7 @@ class BaseGenerator:
         pass
 
     def readAccountName(self, inputExcelFile):
-        with xlrd.open_workbook(inputExcelFile, on_demand=True) as workbook:
-            worksheet = workbook.sheet_by_index(0)
-            row = int(self.nameLocation[1])-1
-            column = string.ascii_lowercase.index(self.nameLocation[0].lower())
-            accountName = worksheet.cell(row, column).value
-        return accountName
+        pass
 
     def generate(self):
         fileMask = self.path + "/" + self.mask
@@ -39,7 +32,7 @@ class BaseGenerator:
         for inputExcelFile in glob.iglob(fileMask):
             print(f"Reading {inputExcelFile}")
 
-            name = self.readAccountName(inputExcelFile)
+            accountName, accountType = self.readAccountName(inputExcelFile)
 
             excelFile = pd.read_excel(inputExcelFile,
                                       header=self.firstRow, engine="xlrd")
@@ -47,9 +40,8 @@ class BaseGenerator:
             # print(f'Columns: {excelFile.dtypes}')
             # print(f'Readed {excelFile.size} rows')
 
-            print(f"Converting {inputExcelFile} for account {name}")
-            csvDF = self.map(excelFile, name)
-            print("Converted")
+            print(f"Converting {inputExcelFile} for account {accountName}")
+            csvDF = self.map(excelFile, accountType, accountName)
 
             csvDF['trxId'] = csvDF[['trxDate', 'originalpayee',
                                     "amount", "labels"]] \
