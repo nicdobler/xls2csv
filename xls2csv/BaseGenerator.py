@@ -6,6 +6,7 @@ agregando el nombre del fichero como primer elemento.
 import pandas as pd
 import glob
 import hashlib
+from Colors import bcolors as c
 
 
 def gen_transaction_id(transaction):
@@ -30,7 +31,7 @@ class BaseGenerator:
 
         # iterate over excel files
         for inputExcelFile in glob.iglob(fileMask):
-            print(f"Reading {inputExcelFile}")
+            print(f"Reading {c.BLUE}{inputExcelFile}{c.ENDC}")
 
             try:
                 accountName, accountType = self.readAccountName(inputExcelFile)
@@ -45,15 +46,16 @@ class BaseGenerator:
                 csvDF = self.map(excelFile, accountType, accountName)
 
                 csvDF['trxId'] = csvDF[['trxDate', 'originalpayee',
-                                        "amount", "labels"]] \
+                                        "amount", "labels", "memo"]] \
                     .apply(gen_transaction_id, axis=1)
                 # csvDF.set_index('trxId', inplace=True)
 
                 # adding to converted files list
                 xlsList.append(csvDF)
             except Exception as e:
-                print("Error reading file.")
+                print(f"{c.FAIL}Error reading file.")
                 print(e)
+                print(f"{c.ENDC}")
 
         if xlsList:
             print("Finished account type")

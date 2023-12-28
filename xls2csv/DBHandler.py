@@ -1,5 +1,6 @@
 import dbm
 import datetime
+from Colors import bcolors as c
 
 
 class DBHandler:
@@ -16,7 +17,8 @@ class DBHandler:
             existing.add(key.decode('utf-8'))
 
         new_df = df[~df['trxId'].isin(existing)]
-        print(f"DB: There are {len(existing)} records. {len(new_df)} records")
+        print(f"There are {len(existing)} records in the DB. " +
+              f"Will compare with {len(new_df)} records")
 
         return new_df
 
@@ -36,4 +38,4 @@ class DBHandler:
             if oldest > self.db[key].decode('utf-8'):
                 del self.db[key]
                 count += 1
-        print(f"Removed {count} keys")
+        print(f"{c.WARNING}Removed {count} keys{c.ENDC}")
