@@ -41,6 +41,7 @@ class IngDirect2CSV(bg.BaseGenerator):
         return "INGEle"
 
     def map(self, excelFile, accountName):
+        excelFile = excelFile[:-1]
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['F. VALOR'],
                                             format="%d/%m/%Y")
