@@ -18,7 +18,7 @@ class DBHandler:
 
         new_df = df[~df['trxId'].isin(existing)]
         print(f"There are {len(existing)} records in the DB. " +
-              f"Will compare with {len(new_df)} records")
+              f"Will compare with {len(df)} records")
 
         return new_df
 
