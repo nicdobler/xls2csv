@@ -49,6 +49,12 @@ def get_memo(concepto):
         x = re.findall(p, str(concepto))
         if x:
             notes = x[0]
+            if notes == "Tarj. :*828304" or \
+                    notes == "Tarjeta 5489019170828304":
+                notes = "Debito Nico"
+            elif notes == "Tarj. :*326305" or \
+                    notes == "Tarjeta 5489019174326305":
+                notes = "Debito Ele"
             break
     return notes.replace(',', '.')
 
