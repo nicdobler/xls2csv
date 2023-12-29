@@ -16,3 +16,6 @@ build:
 
 run:
 	docker run -v ~/Downloads/Banks:/inout xls2csv $(ARGS)
+
+runLocal:
+	poetry run python xls2csv/xls2csv.py ~/Downloads/Banks
