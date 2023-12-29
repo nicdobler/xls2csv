@@ -21,7 +21,7 @@ def get_payee(concepto):
         r'^Bizum De (.*)(?: Concepto ).*?$',
         r'^Pago Recibo De (.*), Ref.*$',
         r'^Recibo (.*) Nº.*$',
-        r'^(Traspaso):.*"$',
+        r'^(Traspaso):.*$',
     ]
     payee = concepto
     for p in patrones:
@@ -29,7 +29,7 @@ def get_payee(concepto):
         if x:
             payee = x[0]
             break
-    return payee.replace(',', ' ')
+    return payee.replace(',', '.')
 
 
 def get_memo(concepto):
@@ -42,7 +42,7 @@ def get_memo(concepto):
         r'^Bizum A Favor De .* Concepto: (.*)$',
         r'^Transferencia De .*, Concepto (.*)\.?$',
         r'^Bizum De .* Concepto (.*)"$',
-        r'^Traspaso: (.*)"$',
+        r'^Traspaso: (.*)$',
     ]
     notes = ""
     for p in patronesConcepto:
@@ -50,7 +50,7 @@ def get_memo(concepto):
         if x:
             notes = x[0]
             break
-    return notes.replace(',', ' ')
+    return notes.replace(',', '.')
 
 
 class Santander2CSV(bg.BaseGenerator):
@@ -83,8 +83,8 @@ class Santander2CSV(bg.BaseGenerator):
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['FECHA OPERACIÓN'],
                                             format="%d/%m/%Y")
-        csvFile["payee"] = excelFile['CONCEPTO'].str.replace(",", "")
-        csvFile["originalpayee"] = excelFile["CONCEPTO"].str.replace(",", "")
+        csvFile["payee"] = excelFile['CONCEPTO'].str.replace(",", ".")
+        csvFile["originalpayee"] = excelFile["CONCEPTO"].str.replace(",", ".")
         csvFile["amount"] = excelFile["IMPORTE EUR"].abs()
         csvFile["trxType"] = excelFile["IMPORTE EUR"].apply(
             lambda x: "credit" if x >= 0 else "debit").astype('category')
@@ -99,7 +99,7 @@ class Santander2CSV(bg.BaseGenerator):
         csvFile["trxDate"] = pd.to_datetime(excelFile['FECHA VALOR'],
                                             format="%d/%m/%Y")
         csvFile["payee"] = excelFile['CONCEPTO'].apply(get_payee)
-        csvFile["originalpayee"] = excelFile["CONCEPTO"].str.replace(",", "")
+        csvFile["originalpayee"] = excelFile["CONCEPTO"].str.replace(",", ".")
         csvFile["amount"] = excelFile["IMPORTE EUR"].abs()
         csvFile["trxType"] = excelFile["IMPORTE EUR"].apply(
             lambda x: "credit" if x >= 0 else "debit").astype('category')

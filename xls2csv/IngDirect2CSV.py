@@ -21,7 +21,7 @@ def get_payee(concepto):
         if x:
             payee = x[0]
             break
-    return payee.replace(',', ' ')
+    return payee.replace(',', '.')
 
 
 def getMemo(series):
@@ -30,7 +30,7 @@ def getMemo(series):
         cate = str(series['CATEGORÍA'])
         subcat = str(series['SUBCATEGORÍA'])
         desc = cate + '/' + subcat
-        return desc.replace(',', '')
+        return desc.replace(',', '.')
     else:
         return ""
 
