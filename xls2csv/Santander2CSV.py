@@ -16,11 +16,11 @@ def get_payee(concepto):
         r'^Transaccion Contactless En (.*), Tarj.*$',
         r'^Transferencia (?:Inmediata )?A Favor De (.*) Concepto: .*$',
         r'^Transferencia (?:Inmediata )?A Favor De (.*)$',
-        r'^Bizum A Favor De (.*)(?: Concepto: ).*"$',
+        r'^Bizum A Favor De (.*)(?: Concepto: ).*$',
         r'^Transferencia De (.*), (?:Concepto .*)?\.?".*$',
         r'^Bizum De (.*)(?: Concepto ).*?$',
         r'^Pago Recibo De (.*), Ref.*$',
-        r'^Recibo (.*) Nº.*$',
+        r'^Recibo (.*) N. Recibo .*$',
         r'^(Traspaso):.*$',
     ]
     payee = concepto
@@ -41,7 +41,8 @@ def get_memo(concepto):
         r'^Transferencia (?:Inmediata )?A Favor De .* Concepto: (.*)$',
         r'^Bizum A Favor De .* Concepto: (.*)$',
         r'^Transferencia De .*, Concepto (.*)\.?$',
-        r'^Bizum De .* Concepto (.*)"$',
+        r'^Bizum De .* Concepto (.*)$',
+        r'^Recibo .* N. Recibo(.*)$',
         r'^Traspaso: (.*)$',
     ]
     notes = ""
