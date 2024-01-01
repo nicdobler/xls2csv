@@ -31,7 +31,12 @@ def getMemo(series):
 class Revolut2CSV(bg.BaseGenerator):
 
     def readAccountName(self, inputExcelFile):
-        return "Revolut", "debit"
+        pattern = r'account-statement.*_(.*)\.csv'
+        x = re.findall(pattern, inputExcelFile)
+        if x:
+            return f"Revolut_{x[0]}", "debit"
+        else:
+            return "Revolut" + inputExcelFile
 
     def readBankFile(seld, inputExcelFile, firstRow):
         bankFile = pd.read_csv(inputExcelFile, header="infer")
