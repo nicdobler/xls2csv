@@ -45,30 +45,34 @@ merged = pd.concat(bankAccountList)
 print(f"There are {len(merged.index)} trx. "
       "Removing already read transactions.")
 
-dbh = db.DBHandler(path + "/database.db")
-merged = dbh.get_new_transactions(merged)
+try:
+    dbh = db.DBHandler(path + "/database.db")
+    merged = dbh.get_new_transactions(merged)
 
-if len(merged.index) > 0:
-    output = f'{path}/AccountImport.csv'
-    total = len(merged.index)
-    print(f"There are {total} new trx. Writing CSV to {output}")
+    if len(merged.index) > 0:
+        output = f'{path}/AccountImport.csv'
+        total = len(merged.index)
+        print(f"There are {total} new trx. Writing CSV to {output}")
 
-    # Converting excel file into CSV file
-    csvFile = merged.drop("trxId", axis=1)
-    csvFile.to_csv(output, index=None, header=False,
-                   quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y')
+        # Converting excel file into CSV file
+        csvFile = merged.drop("trxId", axis=1)
+        csvFile.to_csv(output, index=None, header=False,
+                    quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y')
 
-    if os.access(output, os.R_OK):
-        print(f"{c.GREEN}File written ok.{c.ENDC}")
+        if os.access(output, os.R_OK):
+            print(f"{c.GREEN}File written ok.{c.ENDC}")
+        else:
+            print(f"{c.FAIL}Something went wrong.")
+            exit(1)
+
+        print("Caching results")
+        dbh.update_new_trx(merged)
     else:
-        print(f"{c.FAIL}Something went wrong.")
-        exit(1)
+        print(f"{c.WARNING}No new transacctions to write.{c.ENDC}")
 
-    print("Caching results")
-    dbh.update_new_trx(merged)
-else:
-    print(f"{c.WARNING}No new transacctions to write.{c.ENDC}")
+    dbh.removeOldTrx(365)
 
-dbh.removeOldTrx(365)
-
-print(f"{c.GREEN}Done")
+    print(f"{c.GREEN}Done")
+except Exception as e:
+    print(f"{c.FAIL}Something went wrong")
+    print(e)
