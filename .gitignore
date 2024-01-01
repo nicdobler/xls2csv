@@ -1,3 +1,4 @@
 **/.DS_Store
 xls2csv/__pycache__
 inout
+dist/*
