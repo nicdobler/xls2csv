@@ -4,6 +4,7 @@ Main algorythm
 
 import Santander2CSV as san
 import IngDirect2CSV as id
+import Revolut2CSV as rv
 import DBHandler as db
 import sys
 import pandas as pd
@@ -28,6 +29,14 @@ for a in sde.generate():
 idi = id.IngDirect2CSV(path)
 for a in idi.generate():
     bankAccountList.append(a)
+
+rev = rv.Revolut2CSV(path)
+for a in rev.generate():
+    bankAccountList.append(a)
+
+if len(bankAccountList) == 0:
+    print(f"{c.WARNING}No new transacctions to write. Bye{c.ENDC}")
+    exit(0)
 
 print(f"{c.BOLD}{c.BLUE}All files read. Merging accounts.{c.ENDC}")
 merged = pd.concat(bankAccountList)

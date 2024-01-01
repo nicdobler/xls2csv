@@ -24,6 +24,11 @@ class BaseGenerator:
     def readAccountName(self, inputExcelFile):
         pass
 
+    def readBankFile(seld, inputExcelFile, firstRow):
+        bankFile = pd.read_excel(inputExcelFile, header=firstRow, 
+                                 engine="xlrd")
+        return bankFile
+
     def generate(self):
         fileMask = self.path + "/" + self.mask
         print("Generating files in " + fileMask)
@@ -36,14 +41,13 @@ class BaseGenerator:
             try:
                 accountName, accountType = self.readAccountName(inputExcelFile)
 
-                excelFile = pd.read_excel(inputExcelFile,
-                                          header=self.firstRow, engine="xlrd")
-                # print(f'Columns: {excelFile.columns}')
-                # print(f'Columns: {excelFile.dtypes}')
-                # print(f'Readed {excelFile.size} rows')
+                bankFile = self.readBankFile(inputExcelFile, self.firstRow)
+                # print(f'Columns: {bankFile.columns}')
+                # print(f'Columns: {bankFile.dtypes}')
+                # print(f'Readed {bankFile.size} rows')
 
                 print(f"Converting {inputExcelFile} for account {accountName}")
-                csvDF = self.map(excelFile, accountType, accountName)
+                csvDF = self.map(bankFile, accountType, accountName)
 
                 csvDF['trxId'] = csvDF[['trxDate', 'originalpayee',
                                         "amount", "labels", "memo"]] \
