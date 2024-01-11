@@ -40,8 +40,8 @@ if len(bankAccountList) == 0:
 
 print(f"{c.BOLD}{c.BLUE}All files read. Merging accounts.{c.ENDC}")
 merged = pd.concat(bankAccountList)
-# print(f"There are {len(merged.index)} transactions. Removing duplicates.")
-# merged = merged.drop_duplicates()
+print(f"There are {len(merged.index)} transactions. Removing duplicates.")
+merged = merged.drop_duplicates()
 print(f"There are {len(merged.index)} trx. "
       "Removing already read transactions.")
 
@@ -57,7 +57,7 @@ try:
         # Converting excel file into CSV file
         csvFile = merged.drop("trxId", axis=1)
         csvFile.to_csv(output, index=None, header=False,
-                    quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y')
+                       quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y')
 
         if os.access(output, os.R_OK):
             print(f"{c.GREEN}File written ok.{c.ENDC}")
