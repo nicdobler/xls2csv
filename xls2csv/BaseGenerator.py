@@ -25,7 +25,7 @@ class BaseGenerator:
         pass
 
     def readBankFile(seld, inputExcelFile, firstRow):
-        bankFile = pd.read_excel(inputExcelFile, header=firstRow, 
+        bankFile = pd.read_excel(inputExcelFile, header=firstRow,
                                  engine="xlrd")
         return bankFile
 
@@ -49,8 +49,8 @@ class BaseGenerator:
                 print(f"Converting {inputExcelFile} for account {accountName}")
                 csvDF = self.map(bankFile, accountType, accountName)
 
-                csvDF['trxId'] = csvDF[['trxDate', 'originalpayee',
-                                        "amount", "labels", "memo"]] \
+                csvDF['trxId'] = csvDF[['trxDate', 'originalpayee', 'trxType',
+                                        'amount', 'labels', 'memo']] \
                     .apply(gen_transaction_id, axis=1)
                 # csvDF.set_index('trxId', inplace=True)
 
