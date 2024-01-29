@@ -31,7 +31,7 @@ class BaseGenerator:
 
     def generate(self):
         fileMask = self.path + "/" + self.mask
-        print("Generating files in " + fileMask)
+        print("Processing files in " + fileMask)
         xlsList = []
 
         # iterate over excel files
@@ -62,7 +62,7 @@ class BaseGenerator:
                 print(f"{c.ENDC}")
 
         if xlsList:
-            print("Finished account type")
+            print("Finished process for account type")
             return xlsList
         else:
             merged = []
