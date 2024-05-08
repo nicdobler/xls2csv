@@ -5,6 +5,7 @@ Main algorythm
 import Santander2CSV as san
 import IngDirect2CSV as id
 import Revolut2CSV as rv
+import Wise2CSV as wi
 import DBHandler as db
 import sys
 import pandas as pd
@@ -32,6 +33,10 @@ for a in idi.generate():
 
 rev = rv.Revolut2CSV(path)
 for a in rev.generate():
+    bankAccountList.append(a)
+
+wis = wi.Wise2CSV(path)
+for a in wis.generate():
     bankAccountList.append(a)
 
 if len(bankAccountList) == 0:
