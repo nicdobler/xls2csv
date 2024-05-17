@@ -60,4 +60,4 @@ class IngDirect2CSV(bg.BaseGenerator):
         return csvFile
 
     def __init__(self, path):
-        super(IngDirect2CSV, self).__init__(path, "Movements*.xls", 4)
+        super(IngDirect2CSV, self).__init__(path, "movements*.xls", 5)
