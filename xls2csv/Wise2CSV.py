@@ -4,7 +4,7 @@ agregando el nombre del fichero como primer elemento.
 """
 import BaseGenerator as bg
 import pandas as pd
-import re
+
 
 def getMemo(series):
     cate = str(series['Type'])
@@ -27,17 +27,16 @@ class Wise2CSV(bg.BaseGenerator):
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['Date'],
                                             format="%d-%m-%Y")
-        csvFile["payee"] = excelFile['Merchant']
-        csvFile["originalpayee"] = excelFile["Description"]
+        csvFile["payee"] = excelFile['Merchant'].replace('"', '')
+        csvFile["originalpayee"] = ""
         csvFile["amount"] = pd.to_numeric(excelFile["Amount"]).abs()
         csvFile["trxType"] = pd.to_numeric(excelFile["Amount"]).apply(
             lambda x: "credit" if x >= 0 else "debit").astype('category')
         csvFile["category"] = ""
-        csvFile["reference"] = excelFile['TransferWise ID']
+        csvFile["reference"] = ""
         csvFile["labels"] = accountName
-        csvFile['memo'] = excelFile["Description"]
+        csvFile['memo'] = excelFile["Description"].replace('"', '')
         return csvFile
 
     def __init__(self, path):
-        super(Wise2CSV, self).__init__(path, "balance_statement.csv",
-                                          None)
+        super(Wise2CSV, self).__init__(path, "balance_statement.csv", None)
