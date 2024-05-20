@@ -62,7 +62,8 @@ try:
         # Converting excel file into CSV file
         csvFile = merged.drop("trxId", axis=1)
         csvFile.to_csv(output, index=None, header=False,
-                       quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y')
+                       quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y',
+                        escapechar='-')
 
         if os.access(output, os.R_OK):
             print(f"{c.GREEN}File written ok.{c.ENDC}")
