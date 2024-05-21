@@ -76,7 +76,7 @@ try:
     else:
         print(f"{c.WARNING}No new transacctions to write.{c.ENDC}")
 
-    dbh.removeOldTrx(120)
+    dbh.removeOldTrx(180)
 
     print(f"{c.GREEN}Done")
 except Exception as e:
