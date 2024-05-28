@@ -6,7 +6,7 @@ import BaseGenerator as bg
 import pandas as pd
 
 
-def getMemo(series):
+def getMemo(series) -> str:
     cate = str(series['Type'])
     subcat = str(series['State'])
     desc = cate + '/' + subcat
@@ -15,14 +15,14 @@ def getMemo(series):
 
 class Wise2CSV(bg.BaseGenerator):
 
-    def readAccountName(self, inputExcelFile):
+    def readAccountName(self, inputExcelFile) -> tuple[str, str]:
         return "Wise", "debit"
 
-    def readBankFile(seld, inputExcelFile, firstRow):
+    def readBankFile(seld, inputExcelFile, firstRow) -> pd.DataFrame:
         bankFile = pd.read_csv(inputExcelFile, header="infer")
         return bankFile
 
-    def map(self, excelFile, accountType, accountName):
+    def map(self, excelFile, accountType, accountName) -> pd.DataFrame:
         excelFile = excelFile[:-1]
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['Date'],
@@ -38,5 +38,5 @@ class Wise2CSV(bg.BaseGenerator):
         csvFile['memo'] = excelFile["Description"].replace('"', '')
         return csvFile
 
-    def __init__(self, path):
+    def __init__(self, path: str):
         super(Wise2CSV, self).__init__(path, "balance_statement.csv", None)

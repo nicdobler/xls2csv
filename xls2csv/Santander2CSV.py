@@ -9,7 +9,7 @@ import string
 import xlrd
 
 
-def get_payee(concepto):
+def get_payee(concepto) -> list[str]:
     patrones = [
         r'^Compra (?:Internet En )?(.*), Tarj.*$',
         r'^Pago Movil En (.*), Tarj.*$',
@@ -32,7 +32,7 @@ def get_payee(concepto):
     return payee.replace(',', '.')
 
 
-def get_memo(concepto):
+def get_memo(concepto) -> str:
     patronesConcepto = [
         r'^Compra (?:Internet En )?.*, (Tarj\. :.*)$',
         r'^Compra (?:Internet En )?.*, (Tarjeta \d*).*$',
@@ -62,7 +62,7 @@ def get_memo(concepto):
 
 class Santander2CSV(bg.BaseGenerator):
 
-    def readAccountName(self, inputExcelFile):
+    def readAccountName(self, inputExcelFile) -> tuple[str, str]:
         with xlrd.open_workbook(inputExcelFile, on_demand=True) as workbook:
             worksheet = workbook.sheet_by_index(0)
             accountName = self.getName(worksheet, 'C1')
@@ -72,13 +72,14 @@ class Santander2CSV(bg.BaseGenerator):
             else:
                 return accountName, "debit"
 
-    def getName(self, worksheet, cell):
+    def getName(self, worksheet, cell) -> str:
         row = int(cell[1])-1
         column = string.ascii_lowercase.index(cell[0].lower())
         accountName = worksheet.cell(row, column).value
         return accountName
 
-    def map(self, excelFile, accountType, accountName):
+    def map(self, excelFile: pd.DataFrame, accountType: str,
+            accountName: str) -> pd.DataFrame:
         if accountType == "debit":
             return self.mapDebit(excelFile, accountName)
         elif accountType == "credit":
@@ -86,7 +87,8 @@ class Santander2CSV(bg.BaseGenerator):
         else:
             raise "Not supported"
 
-    def mapCredit(self, excelFile, accountName):
+    def mapCredit(self, excelFile: pd.DataFrame,
+                  accountName: str) -> pd.DataFrame:
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['FECHA OPERACIÓN'],
                                             format="%d/%m/%Y")
@@ -101,7 +103,7 @@ class Santander2CSV(bg.BaseGenerator):
         csvFile['memo'] = ""
         return csvFile
 
-    def mapDebit(self, excelFile, accountName):
+    def mapDebit(self, excelFile: str, accountName: str) -> pd.DataFrame:
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['FECHA VALOR'],
                                             format="%d/%m/%Y")
@@ -116,5 +118,5 @@ class Santander2CSV(bg.BaseGenerator):
         csvFile['memo'] = excelFile['CONCEPTO'].apply(get_memo)
         return csvFile
 
-    def __init__(self, path):
+    def __init__(self, path: str):
         super(Santander2CSV, self).__init__(path, "export*.xls", 7)

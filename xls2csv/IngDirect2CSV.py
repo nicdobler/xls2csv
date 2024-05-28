@@ -37,10 +37,11 @@ def getMemo(series):
 
 class IngDirect2CSV(bg.BaseGenerator):
 
-    def readAccountName(self, inputExcelFile):
+    def readAccountName(self, inputExcelFile) -> tuple[str, str]:
         return "INGEle", "debit"
 
-    def map(self, excelFile, accountType, accountName):
+    def map(self, excelFile, accountType: str, accountName: str
+            ) -> pd.DataFrame:
         excelFile = excelFile[:-1]
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['F. VALOR'],
@@ -59,5 +60,5 @@ class IngDirect2CSV(bg.BaseGenerator):
             .apply(getMemo, axis=1)
         return csvFile
 
-    def __init__(self, path):
+    def __init__(self, path: str):
         super(IngDirect2CSV, self).__init__(path, "movements*.xls", 5)

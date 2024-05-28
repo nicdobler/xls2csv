@@ -9,7 +9,7 @@ import hashlib
 from Colors import bcolors as c
 
 
-def gen_transaction_id(transaction):
+def gen_transaction_id(transaction) -> str:
     hasher = hashlib.sha256()
     trx = ','.join([str(item) for item in transaction.values])
     hasher.update(trx.encode("utf-8"))
@@ -18,18 +18,19 @@ def gen_transaction_id(transaction):
 
 class BaseGenerator:
 
-    def map(self, excelFile, name):
+    def map(self, excelFile: str, name: str) -> pd.DataFrame:
         pass
 
-    def readAccountName(self, inputExcelFile):
+    def readAccountName(self, inputExcelFile: str) -> tuple[str, str]:
         pass
 
-    def readBankFile(seld, inputExcelFile, firstRow):
+    def readBankFile(self, inputExcelFile: str, firstRow: int | None
+                     ) -> pd.DataFrame:
         bankFile = pd.read_excel(inputExcelFile, header=firstRow,
                                  engine="xlrd")
         return bankFile
 
-    def generate(self):
+    def generate(self) -> list[pd.DataFrame]:
         fileMask = self.path + "/" + self.mask
         print("Processing files in " + fileMask)
         xlsList = []
@@ -69,7 +70,7 @@ class BaseGenerator:
 
         return merged
 
-    def __init__(self, path, mask, firstRow):
+    def __init__(self, path: str, mask: str, firstRow: int | None):
         self.path = path
         self.mask = mask
         self.firstRow = firstRow

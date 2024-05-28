@@ -4,7 +4,7 @@ from Colors import bcolors as c
 
 
 class DBHandler:
-    def __init__(self, db_path):
+    def __init__(self, db_path: str):
         '''
         Initializes DB
         '''
@@ -22,14 +22,14 @@ class DBHandler:
 
         return new_df
 
-    def update_new_trx(self, new_df):
+    def update_new_trx(self, new_df) -> None:
         for index, row in new_df.iterrows():
             trx = row['trxId']
             trxDate = row['trxDate']
             self.db[trx.encode('utf-8')] = trxDate.strftime("%Y%m%d") \
                 .encode('utf-8')
 
-    def removeOldTrx(self, numDays):
+    def removeOldTrx(self, numDays: int) -> None:
         oldest = (datetime.date.today() - datetime.timedelta(days=numDays)) \
             .strftime("%Y%m%d")
         print(f'Will remove older transactions than {oldest}')

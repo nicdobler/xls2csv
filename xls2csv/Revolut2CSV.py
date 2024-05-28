@@ -30,14 +30,15 @@ def getMemo(series):
 
 class Revolut2CSV(bg.BaseGenerator):
 
-    def readAccountName(self, inputExcelFile):
+    def readAccountName(self, inputExcelFile) -> tuple[str, str]:
         return "Revolut", "debit"
 
-    def readBankFile(seld, inputExcelFile, firstRow):
+    def readBankFile(self, inputExcelFile, firstRow: int | None
+                     ) -> pd.DataFrame:
         bankFile = pd.read_csv(inputExcelFile, header="infer")
         return bankFile
 
-    def map(self, excelFile, accountType, accountName):
+    def map(self, excelFile, accountType, accountName) -> pd.DataFrame:
         excelFile = excelFile[:-1]
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['Started Date'],
