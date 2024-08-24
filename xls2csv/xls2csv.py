@@ -12,6 +12,7 @@ import pandas as pd
 import csv
 import os
 from Colors import bcolors as c
+from datetime import datetime
 
 print(f"{c.BOLD}Starting transaction reader{c.ENDC}")
 path = os.path.abspath(sys.argv[1])
@@ -55,7 +56,9 @@ try:
     merged = dbh.get_new_transactions(merged)
 
     if len(merged.index) > 0:
-        output = f'{path}/AccountImport.csv'
+        today = datetime.today().strftime("%Y%m%d-%H%M")
+
+        output = f'{path}/AccountImport-{today}.csv'
         total = len(merged.index)
         print(f"There are {total} new trx. Writing CSV to {output}")
 
