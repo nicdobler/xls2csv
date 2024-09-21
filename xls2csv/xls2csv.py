@@ -66,7 +66,7 @@ try:
         csvFile = merged.drop("trxId", axis=1)
         csvFile.to_csv(output, index=None, header=False,
                        quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y',
-                        escapechar='-')
+                       escapechar='-')
 
         if os.access(output, os.R_OK):
             print(f"{c.GREEN}File written ok.{c.ENDC}")
@@ -76,6 +76,7 @@ try:
 
         print("Caching results")
         dbh.update_new_trx(merged)
+        print(f"{c.GREEN}Database updated.{c.ENDC}")
     else:
         print(f"{c.WARNING}No new transacctions to write.{c.ENDC}")
 
