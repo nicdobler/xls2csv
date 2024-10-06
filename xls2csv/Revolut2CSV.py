@@ -40,6 +40,9 @@ class Revolut2CSV(bg.BaseGenerator):
 
     def map(self, excelFile, accountType, accountName) -> pd.DataFrame:
         excelFile = excelFile[:-1]
+        # Filter out rows where 'state' is 'REVERTED'
+        excelFile = excelFile[excelFile['State'] != 'REVERTED']
+
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['Started Date'],
                                             format='ISO8601')
@@ -51,7 +54,7 @@ class Revolut2CSV(bg.BaseGenerator):
         csvFile["category"] = ""
         csvFile["reference"] = ""
         csvFile["labels"] = accountName
-        csvFile['memo'] = excelFile[['Type', 'State']].apply(getMemo, axis=1)
+        csvFile['memo'] = ""
         return csvFile
 
     def __init__(self, path):
