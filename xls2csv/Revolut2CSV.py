@@ -48,7 +48,7 @@ class Revolut2CSV(bg.BaseGenerator):
         csvFile["amount"] = pd.to_numeric(excelFile["Amount"]).abs()
         csvFile["trxType"] = pd.to_numeric(excelFile["Amount"]).apply(
             lambda x: "credit" if x >= 0 else "debit").astype('category')
-        csvFile["category"] = excelFile['Type']
+        csvFile["category"] = ""
         csvFile["reference"] = ""
         csvFile["labels"] = accountName
         csvFile['memo'] = excelFile[['Type', 'State']].apply(getMemo, axis=1)
