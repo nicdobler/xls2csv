@@ -58,7 +58,7 @@ try:
     if len(merged.index) > 0:
         today = datetime.today().strftime("%Y%m%d-%H%M")
 
-        output = f'{path}/AccountImport-{today}.csv'
+        output = f'{path}/AccountQuickenExport-{today}.csv'
         total = len(merged.index)
         print(f"There are {total} new trx. Writing CSV to {output}")
 
@@ -80,7 +80,7 @@ try:
     else:
         print(f"{c.WARNING}No new transacctions to write.{c.ENDC}")
 
-    dbh.removeOldTrx(180)
+    dbh.removeOldTrx(360)
 
     print(f"{c.GREEN}Done")
 except Exception as e:
