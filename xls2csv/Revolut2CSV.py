@@ -54,7 +54,8 @@ class Revolut2CSV(bg.BaseGenerator):
         csvFile["category"] = ""
         csvFile["reference"] = ""
         csvFile["labels"] = accountName
-        csvFile['memo'] = ""
+        csvFile['memo'] = excelFile['State'].apply(
+            lambda x: x if x != "COMPLETED" else "")
         return csvFile
 
     def __init__(self, path):
