@@ -4,7 +4,9 @@ agregando el nombre del fichero como primer elemento.
 """
 import BaseGenerator as bg
 import pandas as pd
+import glob
 import re
+from contextlib import contextmanager
 
 
 def get_payee(concepto):
@@ -26,6 +28,37 @@ def getMemo(series):
     subcat = str(series['State'])
     desc = cate + '/' + subcat
     return desc.replace(',', '.')
+
+
+def append_blank_line_to_files(file_pattern):
+    results = {}
+
+    # Find all matching files
+    matching_files = glob.glob(file_pattern)
+
+    @contextmanager
+    def safe_open_file(filename):
+        file_handle = None
+        try:
+            file_handle = open(filename, 'a')
+            yield file_handle
+        except Exception:
+            yield None
+        finally:
+            if file_handle:
+                file_handle.close()
+
+    # Process each matching file
+    for filename in matching_files:
+        try:
+            with safe_open_file(filename) as f:
+                if f is None:
+                    continue
+                f.write('\n')
+        except Exception:
+            continue
+
+    return results
 
 
 class Revolut2CSV(bg.BaseGenerator):
@@ -52,12 +85,12 @@ class Revolut2CSV(bg.BaseGenerator):
         csvFile["trxType"] = pd.to_numeric(excelFile["Amount"]).apply(
             lambda x: "credit" if x >= 0 else "debit").astype('category')
         csvFile["category"] = ""
-        csvFile["reference"] = ""
+        csvFile["reference"] = excelFile['State']
         csvFile["labels"] = accountName
-        csvFile['memo'] = excelFile['State'].apply(
-            lambda x: x if x != "COMPLETED" else "")
+        csvFile['memo'] = ""
         return csvFile
 
     def __init__(self, path):
+        append_blank_line_to_files("account-statement*.csv")
         super(Revolut2CSV, self).__init__(path, "account-statement*.csv",
                                           None)
