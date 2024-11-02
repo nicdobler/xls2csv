@@ -80,7 +80,8 @@ class Revolut2CSV(bg.BaseGenerator):
         csvFile["trxDate"] = pd.to_datetime(excelFile['Started Date'],
                                             format='ISO8601')
         csvFile["payee"] = excelFile['Description'].apply(get_payee)
-        csvFile["originalpayee"] = excelFile["Description"]
+        csvFile["originalpayee"] = excelFile['Description'].apply(
+            lambda x: x.replace(',', '.'))
         csvFile["amount"] = pd.to_numeric(excelFile["Amount"]).abs()
         csvFile["trxType"] = pd.to_numeric(excelFile["Amount"]).apply(
             lambda x: "credit" if x >= 0 else "debit").astype('category')
