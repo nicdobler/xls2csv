@@ -119,4 +119,4 @@ class Santander2CSV(bg.BaseGenerator):
         return csvFile
 
     def __init__(self, path: str):
-        super(Santander2CSV, self).__init__(path, "export*.xls", 7)
+        super(Santander2CSV, self).__init__(path, "export20*.xls", 7)
