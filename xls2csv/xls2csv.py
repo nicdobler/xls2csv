@@ -3,6 +3,7 @@ Main algorythm
 '''
 
 import Santander2CSV as san
+import SantanderTwo2CSV as san2
 import IngDirect2CSV as id
 import Revolut2CSV as rv
 import Wise2CSV as wi
@@ -26,6 +27,10 @@ bankAccountList = []
 
 sde = san.Santander2CSV(path)
 for a in sde.generate():
+    bankAccountList.append(a)
+
+sde2 = san2.SantanderTwo2CSV(path)
+for a in sde2.generate():
     bankAccountList.append(a)
 
 idi = id.IngDirect2CSV(path)
