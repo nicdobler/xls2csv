@@ -5,8 +5,7 @@ agregando el nombre del fichero como primer elemento.
 import BaseGenerator as bg
 import pandas as pd
 import re
-import string
-import xlrd
+import openpyxl
 
 
 def get_payee(concepto) -> list[str]:
@@ -62,21 +61,30 @@ def get_memo(concepto) -> str:
 
 class SantanderTwo2CSV(bg.BaseGenerator):
 
-    def readAccountName(self, inputExcelFile) -> tuple[str, str]:
-        with xlrd.open_workbook(inputExcelFile, on_demand=True) as workbook:
-            worksheet = workbook.sheet_by_index(0)
-            accountName = self.getCell(worksheet, 'C1')
-            headerTitle = self.getCell(worksheet, 'B8')
-            if headerTitle == "Concepto":
-                return accountName, "credit"
-            else:
-                return accountName, "debit"
+    def readBankFile(self, inputExcelFile: str, firstRow: int | None
+                     ) -> pd.DataFrame:
+        bankFile = pd.read_excel(inputExcelFile, header=firstRow,
+                                 engine="openpyxl")
+        return bankFile
 
-    def getCell(self, worksheet, cell) -> str:
-        row = int(cell[1])-1
-        column = string.ascii_lowercase.index(cell[0].lower())
-        cellContent = worksheet.cell(row, column).value
-        return cellContent
+    def readAccountName(self, inputExcelFile) -> tuple[str, str]:
+        workbook = openpyxl.load_workbook(inputExcelFile, read_only=True,
+                                          data_only=True)
+        worksheet = workbook.active
+
+        accountName = self._getCell_xlsx(worksheet, 'C1')
+        headerTitle = self._getCell_xlsx(worksheet, 'B8')
+
+        workbook.close()
+
+        if headerTitle == "Concepto":
+            return accountName, "credit"
+        else:
+            return accountName, "debit"
+
+    def _getCell_xlsx(self, worksheet, cell) -> str:
+        value = worksheet[cell].value
+        return str(value) if value is not None else ""
 
     def map(self, excelFile: pd.DataFrame, accountType: str,
             accountName: str) -> pd.DataFrame:
@@ -90,12 +98,16 @@ class SantanderTwo2CSV(bg.BaseGenerator):
     def mapCredit(self, excelFile: pd.DataFrame,
                   accountName: str) -> pd.DataFrame:
         csvFile = pd.DataFrame()
-        csvFile["trxDate"] = pd.to_datetime(excelFile['Fecha Operación'],
-                                            format="%d/%m/%Y")
+        csvFile["trxDate"] = pd.to_datetime(excelFile['Fecha operación'],
+                                            format="%Y/%m/%d")
         csvFile["payee"] = excelFile['Concepto'].str.replace(",", ".")
         csvFile["originalpayee"] = excelFile["Concepto"].str.replace(",", ".")
-        csvFile["amount"] = excelFile["Importe"].abs()
-        csvFile["trxType"] = excelFile["Importe"].apply(
+        csvFile["amount"] = pd.to_numeric(excelFile["Importe"]
+                                          .str.replace("−", "-")
+                                          .str.replace(",", ".")).abs()
+        csvFile["trxType"] = pd.to_numeric(excelFile["Importe"]
+                                           .str.replace("−", "-")
+                                           .str.replace(",", ".")).apply(
             lambda x: "credit" if x >= 0 else "debit").astype('category')
         csvFile["category"] = ""
         csvFile["reference"] = ""
