@@ -3,3 +3,4 @@ xls2csv/__pycache__
 inout
 dist/*
 .vscode/settings.json
+poetry.lock
