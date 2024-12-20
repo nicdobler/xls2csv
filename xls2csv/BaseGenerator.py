@@ -11,7 +11,7 @@ from Colors import bcolors as c
 
 def gen_transaction_id(transaction) -> str:
     hasher = hashlib.sha256()
-    trx = ','.join([str(item) for item in transaction.values]).lower()
+    trx = ','.join([str(item)[:100] for item in transaction.values]).lower()
     hasher.update(trx.encode("utf-8"))
     return hasher.hexdigest()
 

@@ -104,9 +104,11 @@ class SantanderTwo2CSV(bg.BaseGenerator):
         csvFile["originalpayee"] = excelFile["Concepto"].str.replace(",", ".")
         csvFile["amount"] = pd.to_numeric(excelFile["Importe"]
                                           .str.replace("−", "-")
+                                          .str.replace(".", "")
                                           .str.replace(",", ".")).abs()
         csvFile["trxType"] = pd.to_numeric(excelFile["Importe"]
                                            .str.replace("−", "-")
+                                           .str.replace(".", "")
                                            .str.replace(",", ".")).apply(
             lambda x: "credit" if x >= 0 else "debit").astype('category')
         csvFile["category"] = ""
