@@ -5,6 +5,8 @@ agregando el nombre del fichero como primer elemento.
 import BaseGenerator as bg
 import pandas as pd
 import re
+import xlrd
+import string
 
 
 def get_payee(concepto):
@@ -38,7 +40,23 @@ def getMemo(series):
 class IngDirect2CSV(bg.BaseGenerator):
 
     def readAccountName(self, inputExcelFile) -> tuple[str, str]:
-        return "INGEle", "debit"
+        with xlrd.open_workbook(inputExcelFile, on_demand=True) as workbook:
+            worksheet = workbook.sheet_by_index(0)
+
+            account = self.getAccount(worksheet, 'D2')
+
+            if account.startswith("ES15 1465 0100 91 1706200660"):
+                return "INGEle", "debit"
+            elif account.startswith("ES85 1465 0100 91 1764164660"):
+                return "INGNoCuenta", "debit"
+            else:
+                return "ING" + account.replace(" ", ""), "debit"
+
+    def getAccount(self, worksheet, cell) -> str:
+        row = int(cell[1])-1
+        column = string.ascii_lowercase.index(cell[0].lower())
+        accountName = worksheet.cell(row, column).value
+        return accountName
 
     def map(self, excelFile, accountType: str, accountName: str
             ) -> pd.DataFrame:
