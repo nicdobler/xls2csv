@@ -73,14 +73,16 @@ class SantanderTwo2CSV(bg.BaseGenerator):
         worksheet = workbook.active
 
         accountName = self._getCell_xlsx(worksheet, 'C1')
-        headerTitle = self._getCell_xlsx(worksheet, 'B8')
+        headerTitle = self._getCell_xlsx(worksheet, 'B7')
 
         workbook.close()
 
         if headerTitle == "Concepto":
             return accountName, "credit"
-        else:
+        elif headerTitle == "Fecha valor":
             return accountName, "debit"
+        else:
+            raise "Some structure changed..."
 
     def _getCell_xlsx(self, worksheet, cell) -> str:
         value = worksheet[cell].value
@@ -99,7 +101,7 @@ class SantanderTwo2CSV(bg.BaseGenerator):
                   accountName: str) -> pd.DataFrame:
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['Fecha operación'],
-                                            format="%Y/%m/%d")
+                                            format="%d/%m/%Y")
         csvFile["payee"] = excelFile['Concepto'].str.replace(",", ".")
         csvFile["originalpayee"] = excelFile["Concepto"].str.replace(",", ".")
         csvFile["amount"] = pd.to_numeric(excelFile["Importe"]
@@ -120,11 +122,17 @@ class SantanderTwo2CSV(bg.BaseGenerator):
     def mapDebit(self, excelFile: str, accountName: str) -> pd.DataFrame:
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['Fecha valor'],
-                                            format="%Y/%m/%d")
+                                            format="%d/%m/%Y")
         csvFile["payee"] = excelFile['Concepto'].apply(get_payee)
         csvFile["originalpayee"] = excelFile["Concepto"].str.replace(",", ".")
-        csvFile["amount"] = excelFile["Importe"].abs()
-        csvFile["trxType"] = excelFile["Importe"].apply(
+        csvFile["amount"] = pd.to_numeric(excelFile["Importe"]
+                                          .str.replace("−", "-")
+                                          .str.replace(".", "")
+                                          .str.replace(",", ".")).abs()
+        csvFile["trxType"] = pd.to_numeric(excelFile["Importe"]
+                                           .str.replace("−", "-")
+                                           .str.replace(".", "")
+                                           .str.replace(",", ".")).apply(
             lambda x: "credit" if x >= 0 else "debit").astype('category')
         csvFile["category"] = ""
         csvFile["reference"] = ""
@@ -133,4 +141,4 @@ class SantanderTwo2CSV(bg.BaseGenerator):
         return csvFile
 
     def __init__(self, path: str):
-        super(SantanderTwo2CSV, self).__init__(path, "export_*.xlsx", 7)
+        super(SantanderTwo2CSV, self).__init__(path, "export_*.xlsx", 6)

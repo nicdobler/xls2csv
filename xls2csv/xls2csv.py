@@ -3,7 +3,7 @@ Main algorythm
 '''
 
 import Santander2CSV as san
-import SantanderTwo2CSV as san2
+import SantanderMobile2CSV as san2
 import IngDirect2CSV as id
 import Revolut2CSV as rv
 import Wise2CSV as wi
@@ -81,6 +81,7 @@ try:
 
         print("Caching results")
         dbh.update_new_trx(merged)
+
         print(f"{c.GREEN}Database updated.{c.ENDC}")
     else:
         print(f"{c.WARNING}No new transacctions to write.{c.ENDC}")
