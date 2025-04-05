@@ -7,7 +7,8 @@ import pandas as pd
 import glob
 import hashlib
 from Colors import bcolors as c
-
+import shutil
+import os
 
 def gen_transaction_id(transaction) -> str:
     hasher = hashlib.sha256()
@@ -57,6 +58,9 @@ class BaseGenerator:
 
                 # adding to converted files list
                 xlsList.append(csvDF)
+
+                self.move_file_to_processed(inputExcelFile)
+
             except Exception as e:
                 print(f"{c.FAIL}Error reading file.")
                 print(e)
@@ -69,6 +73,33 @@ class BaseGenerator:
             merged = []
 
         return merged
+
+    def move_file_to_processed(self, file_path):
+
+        try:
+            # Ruta del directorio de procesados
+            processed_dir = os.path.join(os.path.dirname(file_path), 'processed')
+
+            # Crea el directorio si no existe
+            os.makedirs(processed_dir, exist_ok=True)
+
+            # Nombre del archivo sin extensión
+            filename, file_extension = os.path.splitext(os.path.basename(file_path))
+
+            # Ruta destino del archivo
+            dest_path = os.path.join(processed_dir, filename + file_extension)
+
+            # Añade sufijo si el archivo ya existe
+            suffix = 1
+            while os.path.exists(dest_path):
+                dest_path = os.path.join(processed_dir, f"{filename}-{suffix}{file_extension}")
+                suffix += 1
+
+            # Mueve el archivo
+            shutil.move(file_path, dest_path)
+            print("File moved to processed")
+        except Exception:
+            print("Error moving file")
 
     def __init__(self, path: str, mask: str, firstRow: int | None):
         self.path = path
