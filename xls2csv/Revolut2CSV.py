@@ -8,6 +8,19 @@ import glob
 import re
 from contextlib import contextmanager
 
+HEADER_MAP = {
+    'Type': 'Type', 'Tipo': 'Type',
+    'Product': 'Product', 'Producto': 'Product',
+    'Started Date': 'Started Date', 'Fecha de inicio': 'Started Date',
+    'Completed Date': 'Completed Date', 'Fecha de finalización': 'Completed Date',
+    'Description': 'Description', 'Descripción': 'Description',
+    'Amount': 'Amount', 'Importe': 'Amount',
+    'Fee': 'Fee', 'Comisión': 'Fee',
+    'Currency': 'Currency', 'Divisa': 'Currency',
+    'State': 'State',
+    'Balance': 'Balance', 'Saldo': 'Balance'
+}
+
 
 def get_payee(concepto):
     item = str(concepto)
@@ -69,6 +82,8 @@ class Revolut2CSV(bg.BaseGenerator):
     def readBankFile(self, inputExcelFile, firstRow: int | None
                      ) -> pd.DataFrame:
         bankFile = pd.read_csv(inputExcelFile, header="infer")
+        # nornalize column names
+        bankFile = bankFile.rename(columns=HEADER_MAP)
         return bankFile
 
     def map(self, excelFile, accountType, accountName) -> pd.DataFrame:
