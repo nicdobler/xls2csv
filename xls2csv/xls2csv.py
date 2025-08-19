@@ -14,6 +14,7 @@ import csv
 import os
 from Colors import bcolors as c
 from datetime import datetime
+from Constants import TEST_MODE
 
 print(f"{c.BOLD}Starting transaction reader{c.ENDC}")
 path = os.path.abspath(sys.argv[1])
@@ -79,14 +80,16 @@ try:
             print(f"{c.FAIL}Something went wrong.")
             exit(1)
 
-        print("Caching results")
-        dbh.update_new_trx(merged)
+        if not TEST_MODE:
+            print("Saving new transactions for future executions.")
+            dbh.update_new_trx(merged)
+            print(f"{c.GREEN}Database updated.{c.ENDC}")
+            dbh.removeOldTrx(400)
+        else:
+            print("TEST MODE enabled. New transactions won't be saved.")
 
-        print(f"{c.GREEN}Database updated.{c.ENDC}")
     else:
         print(f"{c.WARNING}No new transacctions to write.{c.ENDC}")
-
-    dbh.removeOldTrx(400)
 
     print(f"{c.GREEN}Done")
 except Exception as e:
