@@ -45,9 +45,9 @@ class IngDirect2CSV(bg.BaseGenerator):
 
             account = self.getAccount(worksheet, 'D2')
 
-            if account.startswith("ES15 1465 0100 91 1706200660"):
+            if account.endswith("0660"):
                 return "INGEle", "debit"
-            elif account.startswith("ES85 1465 0100 91 1764164660"):
+            elif account.endswith("4660"):
                 return "INGNoCuenta", "debit"
             else:
                 return "ING" + account.replace(" ", ""), "debit"
