@@ -9,7 +9,6 @@ import hashlib
 from Colors import bcolors as c
 import shutil
 import os
-from Constants import TEST_MODE
 
 
 def gen_transaction_id(transaction) -> str:
@@ -20,6 +19,7 @@ def gen_transaction_id(transaction) -> str:
 
 
 class BaseGenerator:
+    processed_files = []
 
     def map(self, excelFile: str, name: str) -> pd.DataFrame:
         pass
@@ -61,8 +61,7 @@ class BaseGenerator:
                 # adding to converted files list
                 xlsList.append(csvDF)
 
-                if not TEST_MODE:
-                    self.move_file_to_processed(inputExcelFile)
+                BaseGenerator.processed_files.append(inputExcelFile)
 
             except Exception as e:
                 print(f"{c.FAIL}Error reading file.")
@@ -77,35 +76,45 @@ class BaseGenerator:
 
         return merged
 
-    def move_file_to_processed(self, file_path):
+    @classmethod
+    def moveFilesToProcessed(cls):
+        if not cls.processed_files:
+            return
+
+        print("Moving processed files")
 
         try:
-            # Ruta del directorio de procesados
-            processed_dir = os.path.join(os.path.dirname(file_path),
-                                         'processed')
+            # Assumes all files are in the same folder
+            parent_dir = os.path.dirname(cls.processed_files[0])
+            processed_dir = os.path.join(parent_dir, 'processed')
 
-            # Crea el directorio si no existe
+            # Create 'processed' directory just once
             os.makedirs(processed_dir, exist_ok=True)
-
-            # Nombre del archivo sin extensión
-            filename, extension = os.path.splitext(
-                os.path.basename(file_path))
-
-            # Ruta destino del archivo
-            dest_path = os.path.join(processed_dir, filename + extension)
-
-            # Añade sufijo si el archivo ya existe
-            suffix = 1
-            while os.path.exists(dest_path):
-                dest_path = os.path.join(processed_dir,
-                                         f"{filename}-{suffix}{extension}")
-                suffix += 1
-
-            # Mueve el archivo
-            shutil.move(file_path, dest_path)
-            print("File moved to processed")
         except Exception:
-            print("Error moving file")
+            print("Error creating processd dir")
+            return
+
+        for file_path in cls.processed_files:
+            try:
+                # Nombre del archivo sin extensión
+                filename, extension = os.path.splitext(
+                    os.path.basename(file_path))
+
+                # Ruta destino del archivo
+                dest_path = os.path.join(processed_dir, filename + extension)
+
+                # Añade sufijo si el archivo ya existe
+                suffix = 1
+                while os.path.exists(dest_path):
+                    dest_path = os.path.join(processed_dir,
+                                            f"{filename}-{suffix}{extension}")
+                    suffix += 1
+
+                # Mueve el archivo
+                shutil.move(file_path, dest_path)
+            except Exception:
+                print("Error moving file")
+        print("Files moved to processed")
 
     def __init__(self, path: str, mask: str, firstRow: int | None):
         self.path = path

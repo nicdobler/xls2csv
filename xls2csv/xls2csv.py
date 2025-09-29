@@ -8,6 +8,7 @@ import IngDirect2CSV as id
 import Revolut2CSV as rv
 import Wise2CSV as wi
 import DBHandler as db
+from BaseGenerator import BaseGenerator
 import sys
 import pandas as pd
 import csv
@@ -90,6 +91,9 @@ try:
 
     else:
         print(f"{c.WARNING}No new transacctions to write.{c.ENDC}")
+
+    if not TEST_MODE:
+        BaseGenerator.moveFilesToProcessed()
 
     print(f"{c.GREEN}Done")
 except Exception as e:
