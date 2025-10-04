@@ -62,20 +62,18 @@ class IngDirect2CSV(bg.BaseGenerator):
             ) -> pd.DataFrame:
         excelFile = excelFile[:-1]
         csvFile = pd.DataFrame()
-        csvFile["trxDate"] = pd.to_datetime(excelFile['F. VALOR'],
-                                            format="%d/%m/%Y")
-        csvFile["payee"] = excelFile['DESCRIPCIÓN'].apply(get_payee)
-        csvFile["originalpayee"] = \
-            excelFile["DESCRIPCIÓN"].str.replace(",", "")
-        csvFile["amount"] = pd.to_numeric(excelFile["IMPORTE (€)"]).abs()
-        csvFile["trxType"] = pd.to_numeric(excelFile["IMPORTE (€)"]).apply(
-            lambda x: "credit" if x >= 0 else "debit").astype('category')
-        csvFile["category"] = ""
-        csvFile["reference"] = ""
-        csvFile["labels"] = accountName
-        csvFile['memo'] = \
-            excelFile[['CATEGORÍA', 'SUBCATEGORÍA', "DESCRIPCIÓN"]] \
-            .apply(getMemo, axis=1)
+
+        csvFile["Date"] = pd.to_datetime(excelFile['F. VALOR'], format="%d/%m/%Y")
+        csvFile["Payee"] = excelFile['DESCRIPCIÓN'].apply(get_payee)
+        csvFile["FI Payee"] = ""
+        csvFile["Amount"] = pd.to_numeric(excelFile["IMPORTE (€)"])
+        csvFile["Debit/Credit"] = ""
+        csvFile["Category"] = excelFile[['CATEGORÍA', 'SUBCATEGORÍA', "DESCRIPCIÓN"]].apply(getMemo, axis=1)
+        csvFile["Account"] = accountName
+        csvFile["Tag"] = ""
+        csvFile["Memo"] = excelFile["DESCRIPCIÓN"].str.replace(",", "")
+        csvFile["Chknum"] = ""
+
         return csvFile
 
     def __init__(self, path: str):

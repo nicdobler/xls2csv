@@ -90,32 +90,30 @@ class Santander2CSV(bg.BaseGenerator):
     def mapCredit(self, excelFile: pd.DataFrame,
                   accountName: str) -> pd.DataFrame:
         csvFile = pd.DataFrame()
-        csvFile["trxDate"] = pd.to_datetime(excelFile['FECHA OPERACIÓN'],
-                                            format="%d/%m/%Y")
-        csvFile["payee"] = excelFile['CONCEPTO'].str.replace(",", ".")
-        csvFile["originalpayee"] = excelFile["CONCEPTO"].str.replace(",", ".")
-        csvFile["amount"] = excelFile["IMPORTE EUR"].abs()
-        csvFile["trxType"] = excelFile["IMPORTE EUR"].apply(
-            lambda x: "credit" if x >= 0 else "debit").astype('category')
-        csvFile["category"] = ""
-        csvFile["reference"] = ""
-        csvFile["labels"] = accountName
-        csvFile['memo'] = ""
+        csvFile["Date"] = pd.to_datetime(excelFile['FECHA OPERACIÓN'], format="%d/%m/%Y")
+        csvFile["Payee"] = excelFile['CONCEPTO'].str.replace(",", ".")
+        csvFile["FI Payee"] = ""
+        csvFile["Amount"] = excelFile["IMPORTE EUR"]
+        csvFile["Debit/Credit"] = ""
+        csvFile["Category"] = ""
+        csvFile["Account"] = accountName
+        csvFile["Tag"] = ""
+        csvFile["Memo"] = ""
+        csvFile["Chknum"] = ""
         return csvFile
 
     def mapDebit(self, excelFile: str, accountName: str) -> pd.DataFrame:
         csvFile = pd.DataFrame()
-        csvFile["trxDate"] = pd.to_datetime(excelFile['FECHA VALOR'],
-                                            format="%d/%m/%Y")
-        csvFile["payee"] = excelFile['CONCEPTO'].apply(get_payee)
-        csvFile["originalpayee"] = excelFile["CONCEPTO"].str.replace(",", ".")
-        csvFile["amount"] = excelFile["IMPORTE EUR"].abs()
-        csvFile["trxType"] = excelFile["IMPORTE EUR"].apply(
-            lambda x: "credit" if x >= 0 else "debit").astype('category')
-        csvFile["category"] = ""
-        csvFile["reference"] = ""
-        csvFile["labels"] = accountName
-        csvFile['memo'] = excelFile['CONCEPTO'].apply(get_memo)
+        csvFile["Date"] = pd.to_datetime(excelFile['FECHA VALOR'], format="%d/%m/%Y")
+        csvFile["Payee"] = excelFile['CONCEPTO'].apply(get_payee)
+        csvFile["FI Payee"] = ""
+        csvFile["Amount"] = excelFile["IMPORTE EUR"]
+        csvFile["Debit/Credit"] = ""
+        csvFile["Category"] = ""
+        csvFile["Account"] = accountName
+        csvFile["Tag"] = ""
+        csvFile["Memo"] = excelFile['CONCEPTO'].apply(get_memo)
+        csvFile["Chknum"] = ""
         return csvFile
 
     def __init__(self, path: str):

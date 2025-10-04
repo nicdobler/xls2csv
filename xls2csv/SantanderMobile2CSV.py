@@ -100,44 +100,42 @@ class SantanderTwo2CSV(bg.BaseGenerator):
     def mapCredit(self, excelFile: pd.DataFrame,
                   accountName: str) -> pd.DataFrame:
         csvFile = pd.DataFrame()
-        csvFile["trxDate"] = pd.to_datetime(excelFile['Fecha operación'],
-                                            format="%d/%m/%Y")
-        csvFile["payee"] = excelFile['Concepto'].str.replace(",", ".")
-        csvFile["originalpayee"] = excelFile["Concepto"].str.replace(",", ".")
-        csvFile["amount"] = pd.to_numeric(excelFile["Importe"]
-                                          .str.replace("−", "-")
-                                          .str.replace(".", "")
-                                          .str.replace(",", ".")).abs()
-        csvFile["trxType"] = pd.to_numeric(excelFile["Importe"]
-                                           .str.replace("−", "-")
-                                           .str.replace(".", "")
-                                           .str.replace(",", ".")).apply(
-            lambda x: "credit" if x >= 0 else "debit").astype('category')
-        csvFile["category"] = ""
-        csvFile["reference"] = ""
-        csvFile["labels"] = accountName
-        csvFile['memo'] = ""
+
+        amount_series = pd.to_numeric(excelFile["Importe"]
+                                      .str.replace("−", "-", regex=False)
+                                      .str.replace(".", "", regex=False)
+                                      .str.replace(",", ".", regex=False))
+
+        csvFile["Date"] = pd.to_datetime(excelFile['Fecha operación'], format="%d/%m/%Y")
+        csvFile["Payee"] = excelFile['Concepto'].str.replace(",", ".")
+        csvFile["FI Payee"] = ""
+        csvFile["Amount"] = amount_series
+        csvFile["Debit/Credit"] = ""
+        csvFile["Category"] = ""
+        csvFile["Account"] = accountName
+        csvFile["Tag"] = ""
+        csvFile["Memo"] = excelFile["Concepto"].str.replace(",", ".")
+        csvFile["Chknum"] = ""
         return csvFile
 
     def mapDebit(self, excelFile: str, accountName: str) -> pd.DataFrame:
         csvFile = pd.DataFrame()
-        csvFile["trxDate"] = pd.to_datetime(excelFile['Fecha valor'],
-                                            format="%d/%m/%Y")
-        csvFile["payee"] = excelFile['Concepto'].apply(get_payee)
-        csvFile["originalpayee"] = excelFile["Concepto"].str.replace(",", ".")
-        csvFile["amount"] = pd.to_numeric(excelFile["Importe"]
-                                          .str.replace("−", "-")
-                                          .str.replace(".", "")
-                                          .str.replace(",", ".")).abs()
-        csvFile["trxType"] = pd.to_numeric(excelFile["Importe"]
-                                           .str.replace("−", "-")
-                                           .str.replace(".", "")
-                                           .str.replace(",", ".")).apply(
-            lambda x: "credit" if x >= 0 else "debit").astype('category')
-        csvFile["category"] = ""
-        csvFile["reference"] = ""
-        csvFile["labels"] = accountName
-        csvFile['memo'] = excelFile['Concepto'].apply(get_memo)
+
+        amount_series = pd.to_numeric(excelFile["Importe"]
+                                      .str.replace("−", "-", regex=False)
+                                      .str.replace(".", "", regex=False)
+                                      .str.replace(",", ".", regex=False))
+
+        csvFile["Date"] = pd.to_datetime(excelFile['Fecha valor'], format="%d/%m/%Y")
+        csvFile["Payee"] = excelFile['Concepto'].apply(get_payee)
+        csvFile["FI Payee"] = ""
+        csvFile["Amount"] = amount_series
+        csvFile["Debit/Credit"] = ""
+        csvFile["Category"] = ""
+        csvFile["Account"] = accountName
+        csvFile["Tag"] = ""
+        csvFile["Memo"] = excelFile['Concepto'].apply(get_memo)
+        csvFile["Chknum"] = ""
         return csvFile
 
     def __init__(self, path: str):

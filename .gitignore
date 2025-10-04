@@ -4,8 +4,9 @@ __pycache__/
 *$py.class
 
 # Test files
-tests/Account.xls
-manual_test/
+manual_test/*.csv
+manual_test/*.db
+!manual_test/.gitkeep
 
 # Distribution / packaging
 .Python

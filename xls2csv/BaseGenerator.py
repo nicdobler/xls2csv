@@ -53,8 +53,8 @@ class BaseGenerator:
                 print(f"Converting {inputExcelFile} for account {accountName}")
                 csvDF = self.map(bankFile, accountType, accountName)
 
-                csvDF['trxId'] = csvDF[['trxDate', 'originalpayee', 'trxType',
-                                        'amount', 'labels', 'memo']] \
+                # Use the new Quicken-compliant columns to generate a unique ID
+                csvDF['trxId'] = csvDF[['Date', 'Payee', 'Amount', 'Account', 'Memo']] \
                     .apply(gen_transaction_id, axis=1)
                 # csvDF.set_index('trxId', inplace=True)
 

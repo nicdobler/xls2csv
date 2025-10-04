@@ -1,5 +1,6 @@
 import BaseGenerator as bg
 import pandas as pd
+import numpy as np
 
 class Degiro2CSV(bg.BaseGenerator):
 
@@ -16,7 +17,8 @@ class Degiro2CSV(bg.BaseGenerator):
         # Filter out internal transfers using a regex pattern for partial matches
         descriptions_to_ignore_pattern = (
             "Degiro Cash Sweep Transfer|"
-            "Transferir a su Cuenta de Efectivo en flatexDEGIRO Bank"
+            "Transferir a su Cuenta de Efectivo en flatexDEGIRO Bank|"
+            "Flatex Interest Income"
         )
         excelFile = excelFile[~excelFile['Descripción'].str.contains(descriptions_to_ignore_pattern, na=False)]
 
@@ -40,18 +42,36 @@ class Degiro2CSV(bg.BaseGenerator):
         # The currency is in the 'Unnamed: 8' column. Rename it for clarity.
         excelFile = excelFile.rename(columns={'Unnamed: 8': 'currency'})
 
-        # Now that all filtering and data cleaning is done, create the final CSV dataframe
+        # Now that all filtering and data cleaning is done, create the final Quicken-compliant dataframe
         csvFile = pd.DataFrame()
-        csvFile["trxDate"] = pd.to_datetime(excelFile['Fecha'], format="%d-%m-%Y")
-        csvFile["payee"] = excelFile['Producto'].fillna(excelFile['Descripción'])
-        csvFile["originalpayee"] = ""
-        csvFile["amount"] = excelFile["Variación"].abs()
-        csvFile["trxType"] = excelFile["Variación"].apply(
-            lambda x: "credit" if x >= 0 else "debit").astype('category')
-        csvFile["category"] = ""
-        csvFile["reference"] = ""
-        csvFile["labels"] = excelFile['currency'].apply(lambda x: "DEGIRO_EUR" if x == "EUR" else "DEGIRO_USD")
-        csvFile['memo'] = excelFile["Descripción"]
+
+        # Categorize transactions based on description
+        conditions = [
+            excelFile['Descripción'].str.contains('Dividendo', na=False),
+            excelFile['Descripción'].str.contains('Costes de transacción', na=False),
+            excelFile['Descripción'].str.contains('Retención del dividendo', na=False),
+            excelFile['Descripción'].str.contains('Compra', na=False),
+            excelFile['Descripción'].str.contains('Venta', na=False)
+        ]
+        choices = [
+            'Dividend Income',
+            'Trade Commission',
+            'IRPF',
+            'Buy',
+            'Sell'
+        ]
+
+        csvFile["Date"] = pd.to_datetime(excelFile['Fecha'], format="%d-%m-%Y")
+        csvFile["Payee"] = excelFile['Producto'].fillna(excelFile['Descripción'])
+        csvFile["FI Payee"] = ""
+        csvFile["Amount"] = excelFile["Variación"]  # Use the signed amount
+        csvFile["Debit/Credit"] = ""
+        csvFile["Category"] = np.select(conditions, choices, default='')
+        csvFile["Account"] = excelFile['currency'].apply(lambda x: "DEGIRO_EUR" if x == "EUR" else "DEGIRO_USD")
+        csvFile["Tag"] = ""
+        csvFile["Memo"] = excelFile["Descripción"]
+        csvFile["Chknum"] = ""
+
         return csvFile
 
     def __init__(self, path: str):

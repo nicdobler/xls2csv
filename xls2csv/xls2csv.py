@@ -60,12 +60,15 @@ print(f"{c.BOLD}{c.BLUE}All files read. Merging accounts.{c.ENDC}")
 merged = pd.concat(bankAccountList)
 print(f"There are {len(merged.index)} transactions. Removing duplicates.")
 merged = merged.drop_duplicates()
-print(f"There are {len(merged.index)} trx. "
-      "Removing already read transactions.")
-
 try:
-    dbh = db.DBHandler(path + "/database.db")
-    merged = dbh.get_new_transactions(merged)
+    if not TEST_MODE:
+        print(f"There are {len(merged.index)} trx. "
+              "Removing already read transactions.")
+        dbh = db.DBHandler(path + "/database.db")
+        merged = dbh.get_new_transactions(merged)
+    else:
+        print("TEST MODE enabled. Skipping database filtering.")
+        dbh = None
 
     if len(merged.index) > 0:
         today = datetime.today().strftime("%Y%m%d-%H%M")
@@ -74,11 +77,19 @@ try:
         total = len(merged.index)
         print(f"There are {total} new trx. Writing CSV to {output}")
 
-        # Converting excel file into CSV file
+        # Define the exact column order required by Quicken
+        quicken_columns = [
+            'Date', 'Payee', 'FI Payee', 'Amount', 'Debit/Credit',
+            'Category', 'Account', 'Tag', 'Memo', 'Chknum'
+        ]
+
+        # Drop the internal trxId and reorder columns to match the spec
         csvFile = merged.drop("trxId", axis=1)
-        csvFile.to_csv(output, index=None, header=False,
-                       quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y',
-                       escapechar='-')
+        csvFile = csvFile[quicken_columns]
+
+        # Converting excel file into CSV file, ensuring Quicken compliance
+        csvFile.to_csv(output, index=None, header=True,
+                       quoting=csv.QUOTE_MINIMAL, date_format='%m/%d/%Y')
 
         if os.access(output, os.R_OK):
             print(f"{c.GREEN}File written ok.{c.ENDC}")
