@@ -2,6 +2,10 @@ import BaseGenerator as bg
 import pandas as pd
 import numpy as np
 import glob
+import os
+import csv
+from datetime import datetime
+from .Constants import TEST_MODE
 
 class Degiro2CSV(bg.BaseGenerator):
 
@@ -73,6 +77,18 @@ class Degiro2CSV(bg.BaseGenerator):
         csvFile['Notes'] = excelFile['Producto'].fillna('')
 
         return csvFile
+
+    def write_csv(self, df: pd.DataFrame, path: str):
+        """Writes the DataFrame to a CSV file or prints it to the console."""
+        if TEST_MODE:
+            print("\n--- DEGIRO CSV OUTPUT ---")
+            print(df.to_csv(index=None, header=True, quoting=csv.QUOTE_MINIMAL))
+            print("--- END DEGIRO CSV OUTPUT ---\n")
+        else:
+            today = datetime.today().strftime("%Y%m%d-%H%M")
+            output = f'{path}/DegiroQuickenExport-{today}.csv'
+            print(f"DEGIRO transactions found. Writing to separate file: {output}")
+            df.to_csv(output, index=None, header=True, quoting=csv.QUOTE_MINIMAL)
 
     def generate(self) -> list[pd.DataFrame]:
         """
