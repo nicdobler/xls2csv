@@ -7,6 +7,7 @@ import SantanderMobile2CSV as san2
 import IngDirect2CSV as id
 import Revolut2CSV as rv
 import Wise2CSV as wi
+import Degiro2CSV as deg
 import DBHandler as db
 from BaseGenerator import BaseGenerator
 import sys
@@ -45,6 +46,10 @@ for a in rev.generate():
 
 wis = wi.Wise2CSV(path)
 for a in wis.generate():
+    bankAccountList.append(a)
+
+degiro = deg.Degiro2CSV(path)
+for a in degiro.generate():
     bankAccountList.append(a)
 
 if len(bankAccountList) == 0:
