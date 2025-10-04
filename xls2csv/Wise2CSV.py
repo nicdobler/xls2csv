@@ -25,18 +25,17 @@ class Wise2CSV(bg.BaseGenerator):
     def map(self, excelFile, accountType, accountName) -> pd.DataFrame:
         excelFile = excelFile[:-1]
         csvFile = pd.DataFrame()
-
-        csvFile["Date"] = pd.to_datetime(excelFile['Date'], format="%d-%m-%Y")
-        csvFile["Payee"] = excelFile['Merchant'].replace('"', '')
-        csvFile["FI Payee"] = ""
-        csvFile["Amount"] = pd.to_numeric(excelFile["Amount"])
-        csvFile["Debit/Credit"] = ""
-        csvFile["Category"] = excelFile[['Type', 'State']].apply(getMemo, axis=1)
-        csvFile["Account"] = accountName
-        csvFile["Tag"] = ""
-        csvFile["Memo"] = excelFile["Description"].replace('"', '')
-        csvFile["Chknum"] = ""
-
+        csvFile["trxDate"] = pd.to_datetime(excelFile['Date'],
+                                            format="%d-%m-%Y")
+        csvFile["payee"] = excelFile['Merchant'].replace('"', '')
+        csvFile["originalpayee"] = ""
+        csvFile["amount"] = pd.to_numeric(excelFile["Amount"]).abs()
+        csvFile["trxType"] = pd.to_numeric(excelFile["Amount"]).apply(
+            lambda x: "credit" if x >= 0 else "debit").astype('category')
+        csvFile["category"] = ""
+        csvFile["reference"] = ""
+        csvFile["labels"] = accountName
+        csvFile['memo'] = excelFile["Description"].replace('"', '')
         return csvFile
 
     def __init__(self, path: str):

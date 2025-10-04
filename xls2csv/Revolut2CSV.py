@@ -92,17 +92,18 @@ class Revolut2CSV(bg.BaseGenerator):
         excelFile = excelFile[excelFile['State'] != 'REVERTED']
 
         csvFile = pd.DataFrame()
-        csvFile["Date"] = pd.to_datetime(excelFile['Started Date'], format='ISO8601')
-        csvFile["Payee"] = excelFile['Description'].apply(get_payee)
-        csvFile["FI Payee"] = ""
-        csvFile["Amount"] = pd.to_numeric(excelFile["Amount"])
-        csvFile["Debit/Credit"] = ""
-        csvFile["Category"] = excelFile[['Type', 'State']].apply(getMemo, axis=1)
-        csvFile["Account"] = accountName
-        csvFile["Tag"] = excelFile['State']
-        csvFile["Memo"] = excelFile['Description'].apply(lambda x: x.replace(',', '.'))
-        csvFile["Chknum"] = ""
-
+        csvFile["trxDate"] = pd.to_datetime(excelFile['Started Date'],
+                                            format='ISO8601')
+        csvFile["payee"] = excelFile['Description'].apply(get_payee)
+        csvFile["originalpayee"] = excelFile['Description'].apply(
+            lambda x: x.replace(',', '.'))
+        csvFile["amount"] = pd.to_numeric(excelFile["Amount"]).abs()
+        csvFile["trxType"] = pd.to_numeric(excelFile["Amount"]).apply(
+            lambda x: "credit" if x >= 0 else "debit").astype('category')
+        csvFile["category"] = ""
+        csvFile["reference"] = excelFile['State']
+        csvFile["labels"] = accountName
+        csvFile['memo'] = ""
         return csvFile
 
     def __init__(self, path):

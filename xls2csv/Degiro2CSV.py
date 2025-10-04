@@ -1,6 +1,7 @@
 import BaseGenerator as bg
 import pandas as pd
 import numpy as np
+import glob
 
 class Degiro2CSV(bg.BaseGenerator):
 
@@ -42,7 +43,7 @@ class Degiro2CSV(bg.BaseGenerator):
         # The currency is in the 'Unnamed: 8' column. Rename it for clarity.
         excelFile = excelFile.rename(columns={'Unnamed: 8': 'currency'})
 
-        # Now that all filtering and data cleaning is done, create the final Quicken-compliant dataframe
+        # Now that all filtering is done, create the final Mint-compliant dataframe
         csvFile = pd.DataFrame()
 
         # Categorize transactions based on description
@@ -61,18 +62,36 @@ class Degiro2CSV(bg.BaseGenerator):
             'Sell'
         ]
 
-        csvFile["Date"] = pd.to_datetime(excelFile['Fecha'], format="%d-%m-%Y")
-        csvFile["Payee"] = excelFile['Producto'].fillna(excelFile['Descripción'])
-        csvFile["FI Payee"] = ""
-        csvFile["Amount"] = excelFile["Variación"]  # Use the signed amount
-        csvFile["Debit/Credit"] = ""
-        csvFile["Category"] = np.select(conditions, choices, default='')
-        csvFile["Account"] = excelFile['currency'].apply(lambda x: "DEGIRO_EUR" if x == "EUR" else "DEGIRO_USD")
-        csvFile["Tag"] = ""
-        csvFile["Memo"] = excelFile["Descripción"]
-        csvFile["Chknum"] = ""
+        csvFile['Date'] = pd.to_datetime(excelFile['Fecha'], format="%d-%m-%Y").dt.strftime('%m/%d/%Y')
+        csvFile['Description'] = excelFile['Producto'].fillna(excelFile['Descripción'])
+        csvFile['Original Description'] = excelFile['Descripción']
+        csvFile['Amount'] = excelFile["Variación"].abs()
+        csvFile['Transaction Type'] = np.where(excelFile['Variación'] >= 0, 'credit', 'debit')
+        csvFile['Category'] = np.select(conditions, choices, default='')
+        csvFile['Account Name'] = excelFile['currency'].apply(lambda x: "DEGIRO_EUR" if x == "EUR" else "DEGIRO_USD")
+        csvFile['Labels'] = ""
+        csvFile['Notes'] = excelFile['Producto'].fillna('')
 
         return csvFile
+
+    def generate(self) -> list[pd.DataFrame]:
+        """
+        Overrides the base generator to handle the DEGIRO file format as a special case.
+        This method does not generate a trxId, as the output is not merged with other banks.
+        """
+        fileMask = self.path + "/" + self.mask
+
+        # We only expect one file for DEGIRO
+        try:
+            inputExcelFile = glob.glob(fileMask)[0]
+        except IndexError:
+            return [] # No file found
+
+        print(f"Reading DEGIRO file: {inputExcelFile}")
+        bankFile = self.readBankFile(inputExcelFile, self.firstRow)
+        csvDF = self.map(bankFile, None, None) # accountType and accountName are not used
+
+        return [csvDF] if not csvDF.empty else []
 
     def __init__(self, path: str):
         # The header is on the first row (index 0)

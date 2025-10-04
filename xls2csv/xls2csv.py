@@ -20,98 +20,75 @@ from Constants import TEST_MODE
 
 print(f"{c.BOLD}Starting transaction reader{c.ENDC}")
 path = os.path.abspath(sys.argv[1])
-
 print(f"Processing {path}")
+
 if not os.access(path, os.R_OK):
     print(f"{c.FAIL}Path is not readable")
     exit(1)
 
+# --- Process Regular Banks ---
+bank_parsers = [
+    san.Santander2CSV(path),
+    san2.SantanderTwo2CSV(path),
+    id.IngDirect2CSV(path),
+    rv.Revolut2CSV(path),
+    wi.Wise2CSV(path)
+]
 bankAccountList = []
+for parser in bank_parsers:
+    for account_df in parser.generate():
+        bankAccountList.append(account_df)
 
-sde = san.Santander2CSV(path)
-for a in sde.generate():
-    bankAccountList.append(a)
+# --- Process DEGIRO Separately ---
+degiro_parser = deg.Degiro2CSV(path)
+degiro_data = degiro_parser.generate()
+degiro_processed = bool(degiro_data)
 
-sde2 = san2.SantanderTwo2CSV(path)
-for a in sde2.generate():
-    bankAccountList.append(a)
-
-idi = id.IngDirect2CSV(path)
-for a in idi.generate():
-    bankAccountList.append(a)
-
-rev = rv.Revolut2CSV(path)
-for a in rev.generate():
-    bankAccountList.append(a)
-
-wis = wi.Wise2CSV(path)
-for a in wis.generate():
-    bankAccountList.append(a)
-
-degiro = deg.Degiro2CSV(path)
-for a in degiro.generate():
-    bankAccountList.append(a)
-
-if len(bankAccountList) == 0:
-    print(f"{c.WARNING}No new transacctions to write. Bye{c.ENDC}")
+# --- Exit if no transactions were found at all ---
+if not bankAccountList and not degiro_processed:
+    print(f"{c.WARNING}No new transactions to write. Bye{c.ENDC}")
     exit(0)
 
-print(f"{c.BOLD}{c.BLUE}All files read. Merging accounts.{c.ENDC}")
-merged = pd.concat(bankAccountList)
-print(f"There are {len(merged.index)} transactions. Removing duplicates.")
-merged = merged.drop_duplicates()
-try:
+# --- Write DEGIRO file if data exists ---
+if degiro_processed:
+    degiro_df = pd.concat(degiro_data)
+    if not degiro_df.empty:
+        if TEST_MODE:
+            print("\n--- DEGIRO CSV OUTPUT ---")
+            print(degiro_df.to_csv(index=None, header=True, quoting=csv.QUOTE_MINIMAL))
+            print("--- END DEGIRO CSV OUTPUT ---\n")
+        else:
+            today = datetime.today().strftime("%Y%m%d-%H%M")
+            output = f'{path}/DegiroQuickenExport-{today}.csv'
+            print(f"DEGIRO transactions found. Writing to separate file: {output}")
+            degiro_df.to_csv(output, index=None, header=True, quoting=csv.QUOTE_MINIMAL)
+
+        BaseGenerator.processed_files.append(f"{path}/Account.xls")
+
+# --- Write Regular Banks file if data exists ---
+if bankAccountList:
+    print(f"{c.BOLD}{c.BLUE}All files read. Merging accounts.{c.ENDC}")
+    merged = pd.concat(bankAccountList)
+    merged = merged.drop_duplicates()
+
     if not TEST_MODE:
-        print(f"There are {len(merged.index)} trx. "
-              "Removing already read transactions.")
+        print(f"There are {len(merged.index)} trx. Removing already read transactions.")
         dbh = db.DBHandler(path + "/database.db")
         merged = dbh.get_new_transactions(merged)
     else:
-        print("TEST MODE enabled. Skipping database filtering.")
-        dbh = None
+        print("TEST MODE enabled. Skipping database filtering for regular banks.")
 
     if len(merged.index) > 0:
         today = datetime.today().strftime("%Y%m%d-%H%M")
-
         output = f'{path}/AccountQuickenExport-{today}.csv'
-        total = len(merged.index)
-        print(f"There are {total} new trx. Writing CSV to {output}")
-
-        # Define the exact column order required by Quicken
-        quicken_columns = [
-            'Date', 'Payee', 'FI Payee', 'Amount', 'Debit/Credit',
-            'Category', 'Account', 'Tag', 'Memo', 'Chknum'
-        ]
-
-        # Drop the internal trxId and reorder columns to match the spec
+        print(f"There are {len(merged.index)} new trx. Writing CSV to {output}")
         csvFile = merged.drop("trxId", axis=1)
-        csvFile = csvFile[quicken_columns]
-
-        # Converting excel file into CSV file, ensuring Quicken compliance
-        csvFile.to_csv(output, index=None, header=True,
-                       quoting=csv.QUOTE_MINIMAL, date_format='%m/%d/%Y')
-
-        if os.access(output, os.R_OK):
-            print(f"{c.GREEN}File written ok.{c.ENDC}")
-        else:
-            print(f"{c.FAIL}Something went wrong.")
-            exit(1)
-
-        if not TEST_MODE:
-            print("Saving new transactions for future executions.")
-            dbh.update_new_trx(merged)
-            print(f"{c.GREEN}Database updated.{c.ENDC}")
-            dbh.removeOldTrx(400)
-        else:
-            print("TEST MODE enabled. New transactions won't be saved.")
-
+        csvFile.to_csv(output, index=None, header=False, quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y', escapechar='-')
     else:
-        print(f"{c.WARNING}No new transacctions to write.{c.ENDC}")
+        print(f"{c.WARNING}No new regular transactions to write.{c.ENDC}")
 
-    if not TEST_MODE:
-        BaseGenerator.moveFilesToProcessed()
+# --- Move processed files if not in test mode ---
+if not TEST_MODE:
+    BaseGenerator.moveFilesToProcessed()
 
-    print(f"{c.GREEN}Done")
-except Exception as e:
-    print(f"{c.FAIL}Something went wrong")
-    print(e)
+print(f"{c.GREEN}Done")
