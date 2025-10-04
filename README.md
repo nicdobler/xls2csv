@@ -1,45 +1,88 @@
 # XLS2CSV
 
-Simple project to convert an XLS to CSV
+XLS2CSV is a powerful and flexible tool designed to streamline the process of converting bank statements from XLS or CSV formats into a unified Quicken-ready CSV file. This script intelligently handles statements from multiple banks, merges the data, and removes duplicate transactions by maintaining a local transaction history.
+
+## Supported Banks
+
+The script is designed to parse and process statements from the following banks:
+
+- ING Direct
+- Revolut
+- Santander (including standard and mobile-generated formats)
+- Wise
+
+## How It Works
+
+The script follows a straightforward workflow to process your bank statements:
+
+1.  **Scans for Files**: It recursively scans the input directory for any supported XLS or CSV bank statements.
+2.  **Merges Data**: All transactions from the found files are merged into a single dataset.
+3.  **Removes Duplicates**: It removes duplicate entries from the merged data.
+4.  **Filters Old Transactions**: A local SQLite database (`database.db`) is used to keep track of processed transactions. The script filters out any transactions that have already been saved.
+5.  **Generates CSV**: A new, clean CSV file named `AccountQuickenExport-YYYYMMDD-HHMM.csv` is generated in the input directory, ready for import into Quicken or other financial software.
+6.  **Updates Database**: The new transactions are saved to the database to prevent them from being processed again in future runs.
+7.  **Archives Processed Files**: The original XLS/CSV files are moved to a `processed` sub-folder within the input directory to keep things tidy.
 
 ## Prerequisites
 To run this application, you need to have Docker installed on your system.
 
 ## Usage
-Run the following command in your terminal:
 
-```
-make run file=<file>
-```
-Replace `<file>` with the file to convert.
+### With Docker (Recommended)
 
-## Tests
-The unit tests for the sign_printer app require `pytest`, which can be installed with `pip`:
+1.  **Place your files**: Put all your XLS and CSV bank statements into a directory on your local machine. The default directory is `~/Downloads/Banks`. If you wish to use a different directory, you will need to update the path in the `Makefile`.
 
-```
+2.  **Run the script**: Execute the following command in your terminal:
+    ```sh
+    make run
+    ```
+
+The script will process all supported files in the `~/Downloads/Banks` directory. The output CSV file (`AccountQuickenExport-*.csv`), the transaction database (`database.db`), and a new `processed` folder containing the original source files will be created inside this same directory.
+
+### Locally (for Development)
+
+1.  **Install dependencies**:
+    ```sh
+    pip install poetry
+    poetry install
+    ```
+
+2.  **Run the script**:
+    ```sh
+    make runLocal
+    ```
+This command is configured to use `~/Downloads/Banks` as the input/output directory. You can modify the `runLocal` command in the `Makefile` to point to a different path.
+
+## For Developers
+
+### Running Tests
+
+To run the unit tests, execute:
+
+```sh
 make test
 ```
 
-## Linting
+### Linting
 
-To lint the code, run the following command:
+To check the code for style issues, run:
 
-```
+```sh
 make lint
 ```
 
-## Formatting
+### Formatting
 
-To format the code, run the following command:
+To automatically format the code, run:
 
-```
+```sh
 make format
 ```
 
-## pre-commit
+### Pre-Commit Hook
 
-### Installation
-To enable the pre-commit hook, run the following command:
-```
+To enable the pre-commit hook for automated checks before each commit, run:
+
+```sh
 poetry run pre-commit install
 ```
