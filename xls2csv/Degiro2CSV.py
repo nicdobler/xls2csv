@@ -5,7 +5,7 @@ import glob
 import os
 import csv
 from datetime import datetime
-from .Constants import TEST_MODE
+from Constants import TEST_MODE
 
 class Degiro2CSV(bg.BaseGenerator):
 

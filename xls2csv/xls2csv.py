@@ -63,51 +63,53 @@ if len(bankAccountList) == 0 and not degiro_processed:
     print(f"{c.WARNING}No new transacctions to write. Bye{c.ENDC}")
     exit(0)
 
-print(f"{c.BOLD}{c.BLUE}All files read. Merging accounts.{c.ENDC}")
-merged = pd.concat(bankAccountList)
-print(f"There are {len(merged.index)} transactions. Removing duplicates.")
-merged = merged.drop_duplicates()
-print(f"There are {len(merged.index)} trx. "
-      "Removing already read transactions.")
+if bankAccountList:
+    print(f"{c.BOLD}{c.BLUE}All files read. Merging accounts.{c.ENDC}")
+    merged = pd.concat(bankAccountList)
+    print(f"There are {len(merged.index)} transactions. Removing duplicates.")
+    merged = merged.drop_duplicates()
+    print(f"There are {len(merged.index)} trx. "
+          "Removing already read transactions.")
 
-try:
-    dbh = db.DBHandler(path + "/database.db")
-    merged = dbh.get_new_transactions(merged)
+    try:
+        dbh = db.DBHandler(path + "/database.db")
+        merged = dbh.get_new_transactions(merged)
 
-    if len(merged.index) > 0:
-        today = datetime.today().strftime("%Y%m%d-%H%M")
+        if len(merged.index) > 0:
+            today = datetime.today().strftime("%Y%m%d-%H%M")
 
-        output = f'{path}/AccountQuickenExport-{today}.csv'
-        total = len(merged.index)
-        print(f"There are {total} new trx. Writing CSV to {output}")
+            output = f'{path}/AccountQuickenExport-{today}.csv'
+            total = len(merged.index)
+            print(f"There are {total} new trx. Writing CSV to {output}")
 
-        # Converting excel file into CSV file
-        csvFile = merged.drop("trxId", axis=1)
-        csvFile.to_csv(output, index=None, header=False,
-                       quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y',
-                       escapechar='-')
+            # Converting excel file into CSV file
+            csvFile = merged.drop("trxId", axis=1)
+            csvFile.to_csv(output, index=None, header=False,
+                           quoting=csv.QUOTE_NONE, date_format='%m/%d/%Y',
+                           escapechar='-')
 
-        if os.access(output, os.R_OK):
-            print(f"{c.GREEN}File written ok.{c.ENDC}")
+            if os.access(output, os.R_OK):
+                print(f"{c.GREEN}File written ok.{c.ENDC}")
+            else:
+                print(f"{c.FAIL}Something went wrong.")
+                exit(1)
+
+            if not TEST_MODE:
+                print("Saving new transactions for future executions.")
+                dbh.update_new_trx(merged)
+                print(f"{c.GREEN}Database updated.{c.ENDC}")
+                dbh.removeOldTrx(400)
+            else:
+                print("TEST MODE enabled. New transactions won't be saved.")
+
         else:
-            print(f"{c.FAIL}Something went wrong.")
-            exit(1)
+            print(f"{c.WARNING}No new transacctions to write.{c.ENDC}")
 
-        if not TEST_MODE:
-            print("Saving new transactions for future executions.")
-            dbh.update_new_trx(merged)
-            print(f"{c.GREEN}Database updated.{c.ENDC}")
-            dbh.removeOldTrx(400)
-        else:
-            print("TEST MODE enabled. New transactions won't be saved.")
+    except Exception as e:
+        print(f"{c.FAIL}Something went wrong")
+        print(e)
 
-    else:
-        print(f"{c.WARNING}No new transacctions to write.{c.ENDC}")
+if not TEST_MODE:
+    BaseGenerator.moveFilesToProcessed()
 
-    if not TEST_MODE:
-        BaseGenerator.moveFilesToProcessed()
-
-    print(f"{c.GREEN}Done")
-except Exception as e:
-    print(f"{c.FAIL}Something went wrong")
-    print(e)
+print(f"{c.GREEN}Done")
