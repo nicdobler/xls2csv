@@ -31,11 +31,32 @@ class Degiro2CSV(bg.BaseGenerator):
         excelFile = excelFile[excelFile['Variación'].notna()]
 
         def clean_number_format(series):
-            """Handles both European (e.g., -1.697,58) and US (e.g., 5.46) number formats."""
+            """
+            Handles various European and US number formats robustly.
+            - "1.234,56" -> 1234.56 (European)
+            - "1,234.56" -> 1234.56 (US)
+            - "1234,56"  -> 1234.56 (European)
+            - "1234.56"  -> 1234.56 (US)
+            """
             s = series.astype(str)
-            # If a comma is present, assume it's a European-style number.
-            # Otherwise, assume it's a US-style number and leave it as is.
-            s_cleaned = s.apply(lambda x: x.replace('.', '').replace(',', '.') if ',' in x else x)
+
+            def parse_value(v):
+                if pd.isna(v):
+                    return np.nan
+                v = str(v).strip()
+                # Find the last occurrence of a separator
+                last_dot = v.rfind('.')
+                last_comma = v.rfind(',')
+
+                # Determine decimal separator
+                if last_dot > last_comma: # . is decimal separator (US style)
+                    return float(v.replace(',', ''))
+                elif last_comma > last_dot: # , is decimal separator (EU style)
+                    return float(v.replace('.', '').replace(',', '.'))
+                else: # No separator or only one type
+                    return float(v.replace(',', '.'))
+
+            s_cleaned = s.apply(parse_value)
             return pd.to_numeric(s_cleaned, errors='coerce')
 
         excelFile['Variación'] = clean_number_format(excelFile['Variación'])
