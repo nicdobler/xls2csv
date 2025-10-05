@@ -39,3 +39,12 @@ venv.bak/
 */.DS_Store
 .DS_Store
 .vscode/settings.json
+inout/AccountImport.csv
+inout/CreditoNico.xls
+inout/CreditoShared.xls
+inout/database.db
+inout/DebitoEleYNico.xls
+inout/DebitoNicoCC.xls
+inout/DebitoShared.xls
+inout/Movements copia.xls
+inout/Movements.xls
