@@ -19,3 +19,7 @@ run:
 
 runLocal:
 	poetry run python xls2csv/xls2csv.py ~/Downloads/Banks
+
+manual-test:
+	TEST_MODE=true
+	poetry run python xls2csv/xls2csv.py manual_test
