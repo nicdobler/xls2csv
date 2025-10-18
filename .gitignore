@@ -1,6 +1,42 @@
 **/.DS_Store
-xls2csv/__pycache__
-inout
-dist/*
+inout/*
 .vscode/settings.json
-poetry.lock
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Test files
+manual_test/*.csv
+manual_test/*.db
+!manual_test/.gitkeep
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/

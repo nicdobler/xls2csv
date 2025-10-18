@@ -11,6 +11,12 @@ The script is designed to parse and process statements from the following banks:
 - Santander (including standard and mobile-generated formats)
 - Wise
 
+## Output Format
+
+The script generates a CSV file designed for import into Quicken. The format aims to follow the specification outlined in the [official Quicken CSV documentation](https://info.quicken.com/win/import-transactions-from-csv-file).
+
+However, this documentation may be out of date. A more reliable format, especially for investment accounts, can often be found in community discussions, such as [this one](https://community.quicken.com/discussion/7303280/).
+
 ## How It Works
 
 The script follows a straightforward workflow to process your bank statements:
