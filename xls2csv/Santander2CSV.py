@@ -81,9 +81,9 @@ class Santander2CSV(bg.BaseGenerator):
     def __map(self, excelFile: pd.DataFrame, accountType: str,
               accountName: str) -> pd.DataFrame:
         if accountType == "debit":
-            return self.mapDebit(excelFile, accountName)
+            return self.__mapDebit(excelFile, accountName)
         elif accountType == "credit":
-            return self.mapCredit(excelFile, accountName)
+            return self.__mapCredit(excelFile, accountName)
         else:
             raise "Not supported"
 
@@ -103,7 +103,7 @@ class Santander2CSV(bg.BaseGenerator):
         csvFile['memo'] = ""
         return csvFile
 
-    def mapDebit(self, excelFile: str, accountName: str) -> pd.DataFrame:
+    def __mapDebit(self, excelFile: str, accountName: str) -> pd.DataFrame:
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['FECHA VALOR'],
                                             format="%d/%m/%Y")

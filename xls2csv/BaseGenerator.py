@@ -46,9 +46,9 @@ class BaseGenerator:
             print(f"Reading {c.BLUE}{inputExcelFile}{c.ENDC}")
 
             try:
-                accountName, accountType = self.readAccountName(inputExcelFile)
+                accountName, accountType = self.__readAccountName(inputExcelFile)
 
-                bankFile = self.readBankFile(inputExcelFile, self.firstRow)
+                bankFile = self.__readBankFile(inputExcelFile, self.firstRow)
                 # print(f'Columns: {bankFile.columns}')
                 # print(f'Columns: {bankFile.dtypes}')
                 # print(f'Readed {bankFile.size} rows')

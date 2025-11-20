@@ -78,17 +78,16 @@ def append_blank_line_to_files(file_pattern):
 
 class Revolut2CSV(bg.BaseGenerator):
 
-    def readAccountName(self, inputExcelFile) -> tuple[str, str]:
+    def __readAccountName(self, inputExcelFile) -> tuple[str, str]:
         return "Revolut", "debit"
 
-    def readBankFile(self, inputExcelFile, firstRow: int | None
-                     ) -> pd.DataFrame:
+    def __readBankFile(self, inputExcelFile, firstRow: int | None) -> pd.DataFrame:
         bankFile = pd.read_csv(inputExcelFile, header="infer")
         # nornalize column names
         bankFile = bankFile.rename(columns=HEADER_MAP)
         return bankFile
 
-    def map(self, excelFile, accountType, accountName) -> pd.DataFrame:
+    def __map(self, excelFile, accountType, accountName) -> pd.DataFrame:
         excelFile = excelFile[:-1]
         # Filter out rows where 'state' is 'REVERTED'
         excelFile = excelFile[excelFile['State'] != 'REVERTED']

@@ -91,9 +91,9 @@ class SantanderTwo2CSV(bg.BaseGenerator):
     def __map(self, excelFile: pd.DataFrame, accountType: str,
               accountName: str) -> pd.DataFrame:
         if accountType == "debit":
-            return self.mapDebit(excelFile, accountName)
+            return self.__mapDebit(excelFile, accountName)
         elif accountType == "credit":
-            return self.mapCredit(excelFile, accountName)
+            return self.__mapCredit(excelFile, accountName)
         else:
             raise "Not supported"
 
