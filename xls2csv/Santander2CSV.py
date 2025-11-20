@@ -3,10 +3,10 @@ Convierte los excels pasados como parametros en un csv
 agregando el nombre del fichero como primer elemento.
 """
 import BaseGenerator as bg
-import pandas as pd
+import pandas as pd  # type: ignore
 import re
 import string
-import xlrd
+import xlrd  # type: ignore
 
 
 def get_payee(concepto) -> list[str]:
@@ -62,7 +62,7 @@ def get_memo(concepto) -> str:
 
 class Santander2CSV(bg.BaseGenerator):
 
-    def readAccountName(self, inputExcelFile) -> tuple[str, str]:
+    def __readAccountName(self, inputExcelFile) -> tuple[str, str]:
         with xlrd.open_workbook(inputExcelFile, on_demand=True) as workbook:
             worksheet = workbook.sheet_by_index(0)
             accountName = self.getName(worksheet, 'C1')
@@ -78,8 +78,8 @@ class Santander2CSV(bg.BaseGenerator):
         accountName = worksheet.cell(row, column).value
         return accountName
 
-    def map(self, excelFile: pd.DataFrame, accountType: str,
-            accountName: str) -> pd.DataFrame:
+    def __map(self, excelFile: pd.DataFrame, accountType: str,
+              accountName: str) -> pd.DataFrame:
         if accountType == "debit":
             return self.mapDebit(excelFile, accountName)
         elif accountType == "credit":
@@ -87,8 +87,8 @@ class Santander2CSV(bg.BaseGenerator):
         else:
             raise "Not supported"
 
-    def mapCredit(self, excelFile: pd.DataFrame,
-                  accountName: str) -> pd.DataFrame:
+    def __mapCredit(self, excelFile: pd.DataFrame,
+                    accountName: str) -> pd.DataFrame:
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['FECHA OPERACIÓN'],
                                             format="%d/%m/%Y")

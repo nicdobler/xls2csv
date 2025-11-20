@@ -3,7 +3,8 @@ Convierte los excels pasados como parametros en un csv
 agregando el nombre del fichero como primer elemento.
 """
 # importing pandas module
-import pandas as pd
+import pandas as pd  # type: ignore
+import abc
 import glob
 import hashlib
 from Colors import bcolors as c
@@ -21,14 +22,16 @@ def gen_transaction_id(transaction) -> str:
 class BaseGenerator:
     processed_files = []
 
-    def map(self, excelFile: str, name: str) -> pd.DataFrame:
+    @abc.abstractmethod
+    def __map(self, excelFile: str, name: str) -> pd.DataFrame:
         pass
 
-    def readAccountName(self, inputExcelFile: str) -> tuple[str, str]:
+    @abc.abstractmethod
+    def __readAccountName(self, inputExcelFile: str) -> tuple[str, str]:
         pass
 
-    def readBankFile(self, inputExcelFile: str, firstRow: int | None
-                     ) -> pd.DataFrame:
+    def __readBankFile(self, inputExcelFile: str, firstRow: int | None
+                       ) -> pd.DataFrame:
         bankFile = pd.read_excel(inputExcelFile, header=firstRow,
                                  engine="xlrd")
         return bankFile
@@ -51,8 +54,10 @@ class BaseGenerator:
                 # print(f'Readed {bankFile.size} rows')
 
                 print(f"Converting {inputExcelFile} for account {accountName}")
-                csvDF = self.map(bankFile, accountType, accountName)
+                csvDF = self.__map(bankFile, accountType, accountName)
 
+                # trim to minute just in case
+                csvDF['trxDate'] = csvDF['trxDate'].dt.floor('min')
                 csvDF['trxId'] = csvDF[['trxDate', 'originalpayee', 'trxType',
                                         'amount', 'labels', 'memo']] \
                     .apply(gen_transaction_id, axis=1)
@@ -107,7 +112,7 @@ class BaseGenerator:
                 suffix = 1
                 while os.path.exists(dest_path):
                     dest_path = os.path.join(processed_dir,
-                                            f"{filename}-{suffix}{extension}")
+                                             f"{filename}-{suffix}{extension}")
                     suffix += 1
 
                 # Mueve el archivo

@@ -3,9 +3,9 @@ Convierte los excels pasados como parametros en un csv
 agregando el nombre del fichero como primer elemento.
 """
 import BaseGenerator as bg
-import pandas as pd
+import pandas as pd  # type: ignore
 import re
-import xlrd
+import xlrd  # type: ignore
 import string
 
 
@@ -39,7 +39,7 @@ def getMemo(series):
 
 class IngDirect2CSV(bg.BaseGenerator):
 
-    def readAccountName(self, inputExcelFile) -> tuple[str, str]:
+    def __readAccountName(self, inputExcelFile) -> tuple[str, str]:
         with xlrd.open_workbook(inputExcelFile, on_demand=True) as workbook:
             worksheet = workbook.sheet_by_index(0)
 
@@ -58,8 +58,8 @@ class IngDirect2CSV(bg.BaseGenerator):
         accountName = worksheet.cell(row, column).value
         return accountName
 
-    def map(self, excelFile, accountType: str, accountName: str
-            ) -> pd.DataFrame:
+    def __map(self, excelFile, accountType: str, accountName: str
+              ) -> pd.DataFrame:
         excelFile = excelFile[:-1]
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['F. VALOR'],

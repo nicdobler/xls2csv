@@ -3,7 +3,7 @@ Convierte los excels pasados como parametros en un csv
 agregando el nombre del fichero como primer elemento.
 """
 import BaseGenerator as bg
-import pandas as pd
+import pandas as pd  # type: ignore
 import glob
 import re
 from contextlib import contextmanager
@@ -11,8 +11,10 @@ from contextlib import contextmanager
 HEADER_MAP = {
     'Type': 'Type', 'Tipo': 'Type',
     'Product': 'Product', 'Producto': 'Product',
-    'Started Date': 'Started Date', 'Fecha de inicio': 'Started Date',
-    'Completed Date': 'Completed Date', 'Fecha de finalización': 'Completed Date',
+    'Started Date': 'Started Date',
+    'Fecha de inicio': 'Started Date',
+    'Completed Date': 'Completed Date',
+    'Fecha de finalización': 'Completed Date',
     'Description': 'Description', 'Descripción': 'Description',
     'Amount': 'Amount', 'Importe': 'Amount',
     'Fee': 'Fee', 'Comisión': 'Fee',

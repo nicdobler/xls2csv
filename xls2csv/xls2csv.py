@@ -10,7 +10,7 @@ import Wise2CSV as wi
 import DBHandler as db
 from BaseGenerator import BaseGenerator
 import sys
-import pandas as pd
+import pandas as pd  # type: ignore
 import csv
 import os
 from Colors import bcolors as c
