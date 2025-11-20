@@ -2,15 +2,20 @@
 Lector de extractos DEGIRO y exportador a CSVs separados por divisa.
 Genera archivos separados para EUR y USD, y no mezcla con otros bancos.
 """
-import BaseGenerator as bg
-import pandas as pd  # type: ignore
-import glob
-import os
 import csv
+import glob
+import logging
+import os
 from datetime import datetime
-from Colors import bcolors as c
+
+import pandas as pd  # type: ignore
+
+import BaseGenerator as bg
 import DBHandler as db
+from Colors import bcolors as c
 from Constants import TEST_MODE
+
+logger = logging.getLogger(__name__)
 
 
 # Posibles nombres de columnas (EN/ES) normalizados a claves internas
@@ -118,7 +123,7 @@ class Degiro2CSV(bg.BaseGenerator):
             df = pd.read_excel(inputExcelFile, header=0, engine='openpyxl')
         df = normalize_headers(df)
         try:
-            print(f"DEGIRO columns: {list(df.columns)}")
+            logger.info("DEGIRO columns: %s", list(df.columns))
         except Exception:
             pass
         return df
@@ -151,12 +156,22 @@ class Degiro2CSV(bg.BaseGenerator):
             dbh = db.DBHandler(os.path.join(base_path, 'database.db'))
             out_new = dbh.get_new_transactions(out_df)
             if out_new.empty:
-                print(f"{c.WARNING}DEGIRO {currency}: no hay nuevas transacciones.{c.ENDC}")
+                logger.warning(
+                    "%sDEGIRO %s: no hay nuevas transacciones.%s",
+                    c.WARNING,
+                    currency,
+                    c.ENDC,
+                )
                 continue
 
             today = datetime.today().strftime('%Y%m%d-%H%M')
             output = f"{base_path}/AccountQuickenExport-DEGIRO-{currency}-{today}.csv"
-            print(f"Escribiendo {len(out_new.index)} trx DEGIRO {currency} en {output}")
+            logger.info(
+                "Escribiendo %s trx DEGIRO %s en %s",
+                len(out_new.index),
+                currency,
+                output,
+            )
 
             csvFile = out_new.drop('trxId', axis=1)
             csvFile.to_csv(output, index=None, header=False,
@@ -164,12 +179,22 @@ class Degiro2CSV(bg.BaseGenerator):
                            escapechar='-')
 
             if os.access(output, os.R_OK):
-                print(f"{c.GREEN}Archivo {currency} escrito correctamente.{c.ENDC}")
+                logger.info(
+                    "%sArchivo %s escrito correctamente.%s",
+                    c.GREEN,
+                    currency,
+                    c.ENDC,
+                )
                 if not TEST_MODE:
                     dbh.update_new_trx(out_new)
                     dbh.removeOldTrx(400)
             else:
-                print(f"{c.FAIL}No se pudo verificar la escritura de {output}{c.ENDC}")
+                logger.error(
+                    "%sNo se pudo verificar la escritura de %s%s",
+                    c.FAIL,
+                    output,
+                    c.ENDC,
+                )
                 continue
 
             written.append(output)
@@ -178,27 +203,26 @@ class Degiro2CSV(bg.BaseGenerator):
 
     def generate(self) -> list[pd.DataFrame]:
         fileMask = self.path + "/" + self.mask
-        print("Processing files in " + fileMask)
+        logger.info("Processing files in %s", fileMask)
 
         any_written = False
 
         for inputExcelFile in glob.iglob(fileMask):
-            print(f"Reading {c.BLUE}{inputExcelFile}{c.ENDC}")
+            logger.info("%sReading %s%s", c.BLUE, inputExcelFile, c.ENDC)
             try:
                 _accountName, _accountType = self.readAccountName(inputExcelFile)
                 bankFile = self.__readBankFile(inputExcelFile, self.firstRow)
-                print(f"Converting {inputExcelFile} for DEGIRO")
+                logger.info("Converting %s for DEGIRO", inputExcelFile)
 
                 written_files = self._write_separate_csvs(bankFile, self.path)
                 if written_files:
                     any_written = True
                 Degiro2CSV.processed_files.append(inputExcelFile)
-            except Exception as e:
-                print(f"{c.FAIL}Error leyendo DEGIRO.{c.ENDC}")
-                print(e)
+            except Exception:
+                logger.exception("%sError leyendo DEGIRO.%s", c.FAIL, c.ENDC)
 
         if any_written:
-            print("Finished process for DEGIRO")
+            logger.info("Finished process for DEGIRO")
         # retorna lista vacía para no mezclar con otros bancos
         return []
 

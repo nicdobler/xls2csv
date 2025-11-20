@@ -3,13 +3,17 @@ Convierte los excels pasados como parametros en un csv
 agregando el nombre del fichero como primer elemento.
 """
 # importing pandas module
-import pandas as pd  # type: ignore
 import abc
 import glob
 import hashlib
-from Colors import bcolors as c
-import shutil
+import logging
 import os
+import shutil
+
+import pandas as pd  # type: ignore
+from Colors import bcolors as c
+
+logger = logging.getLogger(__name__)
 
 
 def gen_transaction_id(transaction) -> str:
@@ -38,12 +42,12 @@ class BaseGenerator:
 
     def generate(self) -> list[pd.DataFrame]:
         fileMask = self.path + "/" + self.mask
-        print("Processing files in " + fileMask)
+        logger.info("Processing files in %s", fileMask)
         xlsList = []
 
         # iterate over excel files
         for inputExcelFile in glob.iglob(fileMask):
-            print(f"Reading {c.BLUE}{inputExcelFile}{c.ENDC}")
+            logger.info("%sReading %s%s", c.BLUE, inputExcelFile, c.ENDC)
 
             try:
                 accountName, accountType = self.__readAccountName(inputExcelFile)
@@ -53,7 +57,9 @@ class BaseGenerator:
                 # print(f'Columns: {bankFile.dtypes}')
                 # print(f'Readed {bankFile.size} rows')
 
-                print(f"Converting {inputExcelFile} for account {accountName}")
+                logger.info(
+                    "Converting %s for account %s", inputExcelFile, accountName
+                )
                 csvDF = self.__map(bankFile, accountType, accountName)
 
                 # trim to minute just in case
@@ -68,13 +74,11 @@ class BaseGenerator:
 
                 BaseGenerator.processed_files.append(inputExcelFile)
 
-            except Exception as e:
-                print(f"{c.FAIL}Error reading file.")
-                print(e)
-                print(f"{c.ENDC}")
+            except Exception:
+                logger.exception("%sError reading file.%s", c.FAIL, c.ENDC)
 
         if xlsList:
-            print("Finished process for account type")
+            logger.info("Finished process for account type")
             return xlsList
         else:
             merged = []
@@ -86,7 +90,7 @@ class BaseGenerator:
         if not cls.processed_files:
             return
 
-        print("Moving processed files")
+        logger.info("Moving processed files")
 
         try:
             # Assumes all files are in the same folder
@@ -96,7 +100,7 @@ class BaseGenerator:
             # Create 'processed' directory just once
             os.makedirs(processed_dir, exist_ok=True)
         except Exception:
-            print("Error creating processd dir")
+            logger.exception("Error creating processed dir")
             return
 
         for file_path in cls.processed_files:
@@ -118,8 +122,8 @@ class BaseGenerator:
                 # Mueve el archivo
                 shutil.move(file_path, dest_path)
             except Exception:
-                print("Error moving file")
-        print("Files moved to processed")
+                logger.exception("Error moving file %s", file_path)
+        logger.info("Files moved to processed")
 
     def __init__(self, path: str, mask: str, firstRow: int | None):
         self.path = path
