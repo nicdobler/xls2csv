@@ -3,9 +3,9 @@ Convierte los excels pasados como parametros en un csv
 agregando el nombre del fichero como primer elemento.
 """
 import BaseGenerator as bg
-import pandas as pd
+import pandas as pd  # type: ignore
 import re
-import openpyxl
+import openpyxl  # type: ignore
 
 
 def get_payee(concepto) -> list[str]:
@@ -61,13 +61,13 @@ def get_memo(concepto) -> str:
 
 class SantanderTwo2CSV(bg.BaseGenerator):
 
-    def readBankFile(self, inputExcelFile: str, firstRow: int | None
-                     ) -> pd.DataFrame:
+    def _readBankFile(self, inputExcelFile: str, firstRow: int | None
+                      ) -> pd.DataFrame:
         bankFile = pd.read_excel(inputExcelFile, header=firstRow,
                                  engine="openpyxl")
         return bankFile
 
-    def readAccountName(self, inputExcelFile) -> tuple[str, str]:
+    def _readAccountName(self, inputExcelFile) -> tuple[str, str]:
         workbook = openpyxl.load_workbook(inputExcelFile, read_only=True,
                                           data_only=True)
         worksheet = workbook.active
@@ -88,17 +88,17 @@ class SantanderTwo2CSV(bg.BaseGenerator):
         value = worksheet[cell].value
         return str(value) if value is not None else ""
 
-    def map(self, excelFile: pd.DataFrame, accountType: str,
-            accountName: str) -> pd.DataFrame:
+    def _map(self, excelFile: pd.DataFrame, accountType: str,
+             accountName: str) -> pd.DataFrame:
         if accountType == "debit":
-            return self.mapDebit(excelFile, accountName)
+            return self.__mapDebit(excelFile, accountName)
         elif accountType == "credit":
-            return self.mapCredit(excelFile, accountName)
+            return self.__mapCredit(excelFile, accountName)
         else:
             raise "Not supported"
 
-    def mapCredit(self, excelFile: pd.DataFrame,
-                  accountName: str) -> pd.DataFrame:
+    def __mapCredit(self, excelFile: pd.DataFrame,
+                    accountName: str) -> pd.DataFrame:
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['Fecha operación'],
                                             format="%d/%m/%Y")
@@ -119,7 +119,7 @@ class SantanderTwo2CSV(bg.BaseGenerator):
         csvFile['memo'] = ""
         return csvFile
 
-    def mapDebit(self, excelFile: str, accountName: str) -> pd.DataFrame:
+    def __mapDebit(self, excelFile: str, accountName: str) -> pd.DataFrame:
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['Fecha valor'],
                                             format="%d/%m/%Y")

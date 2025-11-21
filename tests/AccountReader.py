@@ -1,7 +1,11 @@
-import xlrd
-import openpyxl
-import string
+import logging
 import os
+import string
+
+import openpyxl
+import xlrd
+
+logger = logging.getLogger(__name__)
 
 
 class AccountReader:
@@ -51,6 +55,7 @@ class AccountReader:
 
 # Test the code
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     c = AccountReader()
     account, typeac = c.readAccountName("/Users/nico/Code/xls2csv/tests/export_excel1.xlsx")
-    print(f"Account {account} is {typeac}")
+    logger.info("Account %s is %s", account, typeac)

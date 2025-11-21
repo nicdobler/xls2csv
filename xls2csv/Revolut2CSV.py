@@ -3,7 +3,7 @@ Convierte los excels pasados como parametros en un csv
 agregando el nombre del fichero como primer elemento.
 """
 import BaseGenerator as bg
-import pandas as pd
+import pandas as pd  # type: ignore
 import glob
 import re
 from contextlib import contextmanager
@@ -11,13 +11,16 @@ from contextlib import contextmanager
 HEADER_MAP = {
     'Type': 'Type', 'Tipo': 'Type',
     'Product': 'Product', 'Producto': 'Product',
-    'Started Date': 'Started Date', 'Fecha de inicio': 'Started Date',
-    'Completed Date': 'Completed Date', 'Fecha de finalización': 'Completed Date',
+    'Started Date': 'Started Date',
+    'Fecha de inicio': 'Started Date',
+    'Completed Date': 'Completed Date',
+    'Fecha de finalización': 'Completed Date',
     'Description': 'Description', 'Descripción': 'Description',
     'Amount': 'Amount', 'Importe': 'Amount',
     'Fee': 'Fee', 'Comisión': 'Fee',
     'Currency': 'Currency', 'Divisa': 'Currency',
     'State': 'State',
+    'Estado': 'State',
     'Balance': 'Balance', 'Saldo': 'Balance'
 }
 
@@ -76,17 +79,16 @@ def append_blank_line_to_files(file_pattern):
 
 class Revolut2CSV(bg.BaseGenerator):
 
-    def readAccountName(self, inputExcelFile) -> tuple[str, str]:
+    def _readAccountName(self, inputExcelFile) -> tuple[str, str]:
         return "Revolut", "debit"
 
-    def readBankFile(self, inputExcelFile, firstRow: int | None
-                     ) -> pd.DataFrame:
+    def _readBankFile(self, inputExcelFile, firstRow: int | None) -> pd.DataFrame:
         bankFile = pd.read_csv(inputExcelFile, header="infer")
         # nornalize column names
         bankFile = bankFile.rename(columns=HEADER_MAP)
         return bankFile
 
-    def map(self, excelFile, accountType, accountName) -> pd.DataFrame:
+    def _map(self, excelFile, accountType, accountName) -> pd.DataFrame:
         excelFile = excelFile[:-1]
         # Filter out rows where 'state' is 'REVERTED'
         excelFile = excelFile[excelFile['State'] != 'REVERTED']

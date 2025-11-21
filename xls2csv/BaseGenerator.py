@@ -3,12 +3,17 @@ Convierte los excels pasados como parametros en un csv
 agregando el nombre del fichero como primer elemento.
 """
 # importing pandas module
-import pandas as pd
+import abc
 import glob
 import hashlib
-from Colors import bcolors as c
-import shutil
+import logging
 import os
+import shutil
+
+import pandas as pd  # type: ignore
+from Colors import bcolors as c
+
+logger = logging.getLogger(__name__)
 
 
 def gen_transaction_id(transaction) -> str:
@@ -21,38 +26,45 @@ def gen_transaction_id(transaction) -> str:
 class BaseGenerator:
     processed_files = []
 
-    def map(self, excelFile: str, name: str) -> pd.DataFrame:
+    @abc.abstractmethod
+    def _map(self, excelFile: pd.DataFrame, accountType: str,
+             accountName: str) -> pd.DataFrame:
         pass
 
-    def readAccountName(self, inputExcelFile: str) -> tuple[str, str]:
+    @abc.abstractmethod
+    def _readAccountName(self, inputExcelFile: str) -> tuple[str, str]:
         pass
 
-    def readBankFile(self, inputExcelFile: str, firstRow: int | None
-                     ) -> pd.DataFrame:
+    def _readBankFile(self, inputExcelFile: str, firstRow: int | None
+                      ) -> pd.DataFrame:
         bankFile = pd.read_excel(inputExcelFile, header=firstRow,
                                  engine="xlrd")
         return bankFile
 
     def generate(self) -> list[pd.DataFrame]:
         fileMask = self.path + "/" + self.mask
-        print("Processing files in " + fileMask)
+        logger.info("Processing files in %s", fileMask)
         xlsList = []
 
         # iterate over excel files
         for inputExcelFile in glob.iglob(fileMask):
-            print(f"Reading {c.BLUE}{inputExcelFile}{c.ENDC}")
+            logger.info("%sReading %s%s", c.BLUE, inputExcelFile, c.ENDC)
 
             try:
-                accountName, accountType = self.readAccountName(inputExcelFile)
+                accountName, accountType = self._readAccountName(inputExcelFile)
 
-                bankFile = self.readBankFile(inputExcelFile, self.firstRow)
+                bankFile = self._readBankFile(inputExcelFile, self.firstRow)
                 # print(f'Columns: {bankFile.columns}')
                 # print(f'Columns: {bankFile.dtypes}')
                 # print(f'Readed {bankFile.size} rows')
 
-                print(f"Converting {inputExcelFile} for account {accountName}")
-                csvDF = self.map(bankFile, accountType, accountName)
+                logger.info(
+                    "Converting %s for account %s", inputExcelFile, accountName
+                )
+                csvDF = self._map(bankFile, accountType, accountName)
 
+                # trim to minute just in case
+                csvDF['trxDate'] = csvDF['trxDate'].dt.floor('min')
                 csvDF['trxId'] = csvDF[['trxDate', 'originalpayee', 'trxType',
                                         'amount', 'labels', 'memo']] \
                     .apply(gen_transaction_id, axis=1)
@@ -63,13 +75,11 @@ class BaseGenerator:
 
                 BaseGenerator.processed_files.append(inputExcelFile)
 
-            except Exception as e:
-                print(f"{c.FAIL}Error reading file.")
-                print(e)
-                print(f"{c.ENDC}")
+            except Exception:
+                logger.exception("%sError reading file.%s", c.FAIL, c.ENDC)
 
         if xlsList:
-            print("Finished process for account type")
+            logger.info("Finished process for account type")
             return xlsList
         else:
             merged = []
@@ -81,7 +91,7 @@ class BaseGenerator:
         if not cls.processed_files:
             return
 
-        print("Moving processed files")
+        logger.info("Moving processed files")
 
         try:
             # Assumes all files are in the same folder
@@ -91,7 +101,7 @@ class BaseGenerator:
             # Create 'processed' directory just once
             os.makedirs(processed_dir, exist_ok=True)
         except Exception:
-            print("Error creating processd dir")
+            logger.exception("Error creating processed dir")
             return
 
         for file_path in cls.processed_files:
@@ -107,14 +117,14 @@ class BaseGenerator:
                 suffix = 1
                 while os.path.exists(dest_path):
                     dest_path = os.path.join(processed_dir,
-                                            f"{filename}-{suffix}{extension}")
+                                             f"{filename}-{suffix}{extension}")
                     suffix += 1
 
                 # Mueve el archivo
                 shutil.move(file_path, dest_path)
             except Exception:
-                print("Error moving file")
-        print("Files moved to processed")
+                logger.exception("Error moving file %s", file_path)
+        logger.info("Files moved to processed")
 
     def __init__(self, path: str, mask: str, firstRow: int | None):
         self.path = path

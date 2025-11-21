@@ -1,6 +1,10 @@
-import dbm
 import datetime
+import dbm
+import logging
+
 from Colors import bcolors as c
+
+logger = logging.getLogger(__name__)
 
 
 class DBHandler:
@@ -17,8 +21,11 @@ class DBHandler:
             existing.add(key.decode('utf-8'))
 
         new_df = df[~df['trxId'].isin(existing)]
-        print(f"There are {len(existing)} records in the DB. " +
-              f"Will compare with {len(df)} records")
+        logger.info(
+            "There are %s records in the DB. Will compare with %s records",
+            len(existing),
+            len(df),
+        )
 
         return new_df
 
@@ -32,10 +39,10 @@ class DBHandler:
     def removeOldTrx(self, numDays: int) -> None:
         oldest = (datetime.date.today() - datetime.timedelta(days=numDays)) \
             .strftime("%Y%m%d")
-        print(f'Will remove older transactions than {oldest}')
+        logger.info('Will remove older transactions than %s', oldest)
         count = 0
         for key in self.db.keys():
             if oldest > self.db[key].decode('utf-8'):
                 del self.db[key]
                 count += 1
-        print(f"{c.WARNING}Removed {count} keys{c.ENDC}")
+        logger.warning("%sRemoved %s keys%s", c.WARNING, count, c.ENDC)

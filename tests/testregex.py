@@ -1,4 +1,8 @@
+import logging
 import re
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 patronesPayee = [
     '^"Compra (?:Internet En )?(.*), Tarj.*$',
@@ -33,7 +37,7 @@ with open("file.csv") as myFile:
                 break
             x = re.findall(p, line)
             if x:
-                print(x[0], " --> ", line.rstrip())
+                logger.info("%s --> %s", x[0], line.rstrip())
                 matched = True
         if not matched:
-            print("Not found: ", line.rstrip())
+            logger.warning("Not found: %s", line.rstrip())

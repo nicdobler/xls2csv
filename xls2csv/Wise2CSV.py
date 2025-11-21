@@ -3,7 +3,7 @@ Convierte los excels pasados como parametros en un csv
 agregando el nombre del fichero como primer elemento.
 """
 import BaseGenerator as bg
-import pandas as pd
+import pandas as pd  # type: ignore
 
 
 def getMemo(series) -> str:
@@ -15,14 +15,14 @@ def getMemo(series) -> str:
 
 class Wise2CSV(bg.BaseGenerator):
 
-    def readAccountName(self, inputExcelFile) -> tuple[str, str]:
+    def _readAccountName(self, inputExcelFile) -> tuple[str, str]:
         return "Wise", "debit"
 
-    def readBankFile(seld, inputExcelFile, firstRow) -> pd.DataFrame:
+    def _readBankFile(seld, inputExcelFile, firstRow) -> pd.DataFrame:
         bankFile = pd.read_csv(inputExcelFile, header="infer")
         return bankFile
 
-    def map(self, excelFile, accountType, accountName) -> pd.DataFrame:
+    def _map(self, excelFile, accountType, accountName) -> pd.DataFrame:
         excelFile = excelFile[:-1]
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['Date'],
