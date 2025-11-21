@@ -27,15 +27,16 @@ class BaseGenerator:
     processed_files = []
 
     @abc.abstractmethod
-    def __map(self, excelFile: str, name: str) -> pd.DataFrame:
+    def _map(self, excelFile: pd.DataFrame, accountType: str,
+             accountName: str) -> pd.DataFrame:
         pass
 
     @abc.abstractmethod
-    def __readAccountName(self, inputExcelFile: str) -> tuple[str, str]:
+    def _readAccountName(self, inputExcelFile: str) -> tuple[str, str]:
         pass
 
-    def __readBankFile(self, inputExcelFile: str, firstRow: int | None
-                       ) -> pd.DataFrame:
+    def _readBankFile(self, inputExcelFile: str, firstRow: int | None
+                      ) -> pd.DataFrame:
         bankFile = pd.read_excel(inputExcelFile, header=firstRow,
                                  engine="xlrd")
         return bankFile
@@ -50,9 +51,9 @@ class BaseGenerator:
             logger.info("%sReading %s%s", c.BLUE, inputExcelFile, c.ENDC)
 
             try:
-                accountName, accountType = self.__readAccountName(inputExcelFile)
+                accountName, accountType = self._readAccountName(inputExcelFile)
 
-                bankFile = self.__readBankFile(inputExcelFile, self.firstRow)
+                bankFile = self._readBankFile(inputExcelFile, self.firstRow)
                 # print(f'Columns: {bankFile.columns}')
                 # print(f'Columns: {bankFile.dtypes}')
                 # print(f'Readed {bankFile.size} rows')
@@ -60,7 +61,7 @@ class BaseGenerator:
                 logger.info(
                     "Converting %s for account %s", inputExcelFile, accountName
                 )
-                csvDF = self.__map(bankFile, accountType, accountName)
+                csvDF = self._map(bankFile, accountType, accountName)
 
                 # trim to minute just in case
                 csvDF['trxDate'] = csvDF['trxDate'].dt.floor('min')

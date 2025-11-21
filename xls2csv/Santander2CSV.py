@@ -62,7 +62,7 @@ def get_memo(concepto) -> str:
 
 class Santander2CSV(bg.BaseGenerator):
 
-    def __readAccountName(self, inputExcelFile) -> tuple[str, str]:
+    def _readAccountName(self, inputExcelFile) -> tuple[str, str]:
         with xlrd.open_workbook(inputExcelFile, on_demand=True) as workbook:
             worksheet = workbook.sheet_by_index(0)
             accountName = self.getName(worksheet, 'C1')
@@ -78,8 +78,8 @@ class Santander2CSV(bg.BaseGenerator):
         accountName = worksheet.cell(row, column).value
         return accountName
 
-    def __map(self, excelFile: pd.DataFrame, accountType: str,
-              accountName: str) -> pd.DataFrame:
+    def _map(self, excelFile: pd.DataFrame, accountType: str,
+             accountName: str) -> pd.DataFrame:
         if accountType == "debit":
             return self.__mapDebit(excelFile, accountName)
         elif accountType == "credit":

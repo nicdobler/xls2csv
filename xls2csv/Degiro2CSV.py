@@ -105,11 +105,11 @@ def build_output(df: pd.DataFrame, account_label: str) -> pd.DataFrame:
 
 class Degiro2CSV(bg.BaseGenerator):
 
-    def __readAccountName(self, inputExcelFile) -> tuple[str, str]:
+    def _readAccountName(self, inputExcelFile) -> tuple[str, str]:
         # Mantener etiqueta fija; no se usa el tipo en este parser
         return 'DEGIRO', 'investment'
 
-    def __readBankFile(self, inputExcelFile, firstRow: int | None) -> pd.DataFrame:
+    def _readBankFile(self, inputExcelFile, firstRow: int | None) -> pd.DataFrame:
         # Detecta engine por extensión, con fallback por si la extensión no coincide
         _, ext = os.path.splitext(inputExcelFile)
         ext = ext.lower()
@@ -210,8 +210,8 @@ class Degiro2CSV(bg.BaseGenerator):
         for inputExcelFile in glob.iglob(fileMask):
             logger.info("%sReading %s%s", c.BLUE, inputExcelFile, c.ENDC)
             try:
-                _accountName, _accountType = self.readAccountName(inputExcelFile)
-                bankFile = self.__readBankFile(inputExcelFile, self.firstRow)
+                _accountName, _accountType = self._readAccountName(inputExcelFile)
+                bankFile = self._readBankFile(inputExcelFile, self.firstRow)
                 logger.info("Converting %s for DEGIRO", inputExcelFile)
 
                 written_files = self._write_separate_csvs(bankFile, self.path)

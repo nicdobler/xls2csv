@@ -39,7 +39,7 @@ def getMemo(series):
 
 class IngDirect2CSV(bg.BaseGenerator):
 
-    def __readAccountName(self, inputExcelFile) -> tuple[str, str]:
+    def _readAccountName(self, inputExcelFile) -> tuple[str, str]:
         with xlrd.open_workbook(inputExcelFile, on_demand=True) as workbook:
             worksheet = workbook.sheet_by_index(0)
 
@@ -58,8 +58,8 @@ class IngDirect2CSV(bg.BaseGenerator):
         accountName = worksheet.cell(row, column).value
         return accountName
 
-    def __map(self, excelFile, accountType: str, accountName: str
-              ) -> pd.DataFrame:
+    def _map(self, excelFile, accountType: str, accountName: str
+             ) -> pd.DataFrame:
         excelFile = excelFile[:-1]
         csvFile = pd.DataFrame()
         csvFile["trxDate"] = pd.to_datetime(excelFile['F. VALOR'],

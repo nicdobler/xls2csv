@@ -61,13 +61,13 @@ def get_memo(concepto) -> str:
 
 class SantanderTwo2CSV(bg.BaseGenerator):
 
-    def __readBankFile(self, inputExcelFile: str, firstRow: int | None
-                       ) -> pd.DataFrame:
+    def _readBankFile(self, inputExcelFile: str, firstRow: int | None
+                      ) -> pd.DataFrame:
         bankFile = pd.read_excel(inputExcelFile, header=firstRow,
                                  engine="openpyxl")
         return bankFile
 
-    def __readAccountName(self, inputExcelFile) -> tuple[str, str]:
+    def _readAccountName(self, inputExcelFile) -> tuple[str, str]:
         workbook = openpyxl.load_workbook(inputExcelFile, read_only=True,
                                           data_only=True)
         worksheet = workbook.active
@@ -88,8 +88,8 @@ class SantanderTwo2CSV(bg.BaseGenerator):
         value = worksheet[cell].value
         return str(value) if value is not None else ""
 
-    def __map(self, excelFile: pd.DataFrame, accountType: str,
-              accountName: str) -> pd.DataFrame:
+    def _map(self, excelFile: pd.DataFrame, accountType: str,
+             accountName: str) -> pd.DataFrame:
         if accountType == "debit":
             return self.__mapDebit(excelFile, accountName)
         elif accountType == "credit":
