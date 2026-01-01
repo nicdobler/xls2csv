@@ -210,14 +210,14 @@ class Degiro2CSV(bg.BaseGenerator):
         for inputExcelFile in glob.iglob(fileMask):
             logger.info("%sReading %s%s", c.BLUE, inputExcelFile, c.ENDC)
             try:
-                _accountName, _accountType = self._readAccountName(inputExcelFile)
+                accountName, _accountType = self._readAccountName(inputExcelFile)
                 bankFile = self._readBankFile(inputExcelFile, self.firstRow)
                 logger.info("Converting %s for DEGIRO", inputExcelFile)
 
                 written_files = self._write_separate_csvs(bankFile, self.path)
                 if written_files:
                     any_written = True
-                Degiro2CSV.processed_files.append(inputExcelFile)
+                Degiro2CSV.processed_files.append((inputExcelFile, accountName))
             except Exception:
                 logger.exception("%sError leyendo DEGIRO.%s", c.FAIL, c.ENDC)
 

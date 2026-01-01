@@ -73,7 +73,7 @@ class BaseGenerator:
                 # adding to converted files list
                 xlsList.append(csvDF)
 
-                BaseGenerator.processed_files.append(inputExcelFile)
+                BaseGenerator.processed_files.append((inputExcelFile, accountName))
 
             except Exception:
                 logger.exception("%sError reading file.%s", c.FAIL, c.ENDC)
@@ -95,7 +95,8 @@ class BaseGenerator:
 
         try:
             # Assumes all files are in the same folder
-            parent_dir = os.path.dirname(cls.processed_files[0])
+            first_file_path, _ = cls.processed_files[0]
+            parent_dir = os.path.dirname(first_file_path)
             processed_dir = os.path.join(parent_dir, 'processed')
 
             # Create 'processed' directory just once
@@ -104,11 +105,15 @@ class BaseGenerator:
             logger.exception("Error creating processed dir")
             return
 
-        for file_path in cls.processed_files:
+        for file_path, account_name in cls.processed_files:
             try:
                 # Nombre del archivo sin extensión
                 filename, extension = os.path.splitext(
                     os.path.basename(file_path))
+
+                # Agregar nombre de cuenta al nombre del archivo (sin espacios)
+                account_name_clean = account_name.replace(" ", "")
+                filename = f"{filename}-{account_name_clean}"
 
                 # Ruta destino del archivo
                 dest_path = os.path.join(processed_dir, filename + extension)
