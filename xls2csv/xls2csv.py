@@ -33,7 +33,11 @@ stdout_handler.setLevel(log_level)
 stdout_handler.setFormatter(logging.Formatter(log_format))
 
 # Configurar handler para archivo con rotación mensual
-log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "logs")
+# El log se guarda en sys.argv[1]/logs
+if len(sys.argv) < 2:
+    print("Error: Se requiere un argumento: el path del directorio", file=sys.stderr)
+    sys.exit(1)
+log_dir = os.path.join(os.path.abspath(sys.argv[1]), "logs")
 os.makedirs(log_dir, exist_ok=True)
 log_file = os.path.join(log_dir, "xls2csv.log")
 
