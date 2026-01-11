@@ -18,6 +18,7 @@ import pandas as pd  # type: ignore
 from BaseGenerator import BaseGenerator
 from Colors import bcolors as c
 from Constants import TEST_MODE
+from postprocessing import AmazonPrimeHandler, PostProcessor
 
 log_level_name = os.environ.get("XLS2CSV_LOGLEVEL", "INFO").upper()
 log_level = getattr(logging, log_level_name, logging.INFO)
@@ -74,6 +75,19 @@ try:
     merged = dbh.get_new_transactions(merged)
 
     if len(merged.index) > 0:
+        # Post-procesar transacciones
+        try:
+            logger.info("Post-procesando transacciones...")
+            amazon_handler = AmazonPrimeHandler()
+            post_processor = PostProcessor([amazon_handler])
+            merged = post_processor.process_transactions(merged, output_path=path)
+            logger.info("%sPost-procesamiento completado.%s", c.GREEN, c.ENDC)
+        except Exception as e:
+            logger.warning(
+                "%sError en post-procesamiento, continuando sin él: %s%s",
+                c.WARNING, str(e), c.ENDC
+            )
+
         today = datetime.today().strftime("%Y%m%d-%H%M")
 
         output = f'{path}/AccountQuickenExport-{today}.csv'
