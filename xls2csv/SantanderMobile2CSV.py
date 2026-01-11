@@ -13,8 +13,9 @@ def get_payee(concepto) -> list[str]:
         r'^COMPRA (?:INTERNET EN )?(.*), TARJ.*$',
         r'^PAGO MOVIL EN (.*), TARJ.*$',
         r'^TRANSACCION CONTACTLESS EN (.*), TARJ.*$',
-        r'^TRANSFERENCIA (?:INMEDIATA )?A FAVOR DE (.*) CONCEPTO: .*$',
+        r'^TRANSFERENCIA (?:INMEDIATA )?A FAVOR DE (.*?) CONCEPTO:? .*$',
         r'^TRANSFERENCIA (?:INMEDIATA )?A FAVOR DE (.*)$',
+        r'^TRANSFERENCIA (?:INMEDIATA )?DE ([^.]*?)(?: \.\.|,? CONCEPTO).*$',
         r'^BIZUM A FAVOR DE (.*)(?: CONCEPTO: ).*$',
         r'^TRANSFERENCIA DE (.*), (?:CONCEPTO .*)?\.?".*$',
         r'^BIZUM DE (.*)(?: CONCEPTO ).*?$',
@@ -26,7 +27,7 @@ def get_payee(concepto) -> list[str]:
     for p in patrones:
         x = re.findall(p, concepto)
         if x:
-            payee = x[0]
+            payee = x[0].strip()
             break
     return payee.replace(',', '.')
 
@@ -37,7 +38,8 @@ def get_memo(concepto) -> str:
         r'^COMPRA (?:INTERNET EN )?.*, (TARJETA \d*).*$',
         r'^PAGO MOVIL EN .*, (TARJ\. :.*)$',
         r'^TRANSACCION CONTACTLESS EN .*, (TARJ\. :.*)$',
-        r'^TRANSFERENCIA (?:INMEDIATA )?A FAVOR DE .* CONCEPTO: (.*)$',
+        r'^TRANSFERENCIA (?:INMEDIATA )?A FAVOR DE .* CONCEPTO:? (.*)$',
+        r'^TRANSFERENCIA (?:INMEDIATA )?DE .*,? CONCEPTO (.*)$',
         r'^BIZUM A FAVOR DE .* CONCEPTO: (.*)$',
         r'^TRANSFERENCIA DE .*, CONCEPTO (.*)\.?$',
         r'^BIZUM DE .* CONCEPTO (.*)$',
@@ -48,7 +50,7 @@ def get_memo(concepto) -> str:
     for p in patronesConcepto:
         x = re.findall(p, str(concepto))
         if x:
-            notes = x[0]
+            notes = x[0].strip()
             if notes == "TARJ. :*828304" or \
                     notes == "TARJETA 5489019170828304":
                 notes = "Debito Nico"
