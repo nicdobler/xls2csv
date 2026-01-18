@@ -9,6 +9,7 @@ import hashlib
 import logging
 import os
 import shutil
+from datetime import datetime
 
 import pandas as pd  # type: ignore
 from Colors import bcolors as c
@@ -113,7 +114,12 @@ class BaseGenerator:
 
                 # Agregar nombre de cuenta al nombre del archivo (sin espacios)
                 account_name_clean = account_name.replace(" ", "")
-                filename = f"{filename}-{account_name_clean}"
+
+                # Get creation date
+                creation_time = os.stat(file_path).st_birthtime
+                date_str = datetime.fromtimestamp(creation_time).strftime('%y%m%d')
+
+                filename = f"{date_str}-{account_name_clean}-{filename}"
 
                 # Ruta destino del archivo
                 dest_path = os.path.join(processed_dir, filename + extension)
