@@ -4,3 +4,6 @@ inout
 dist/*
 .vscode/settings.json
 poetry.lock
+logs
+samples
+
