@@ -5,8 +5,10 @@ agregando el nombre del fichero como primer elemento.
 import BaseGenerator as bg
 import pandas as pd  # type: ignore
 import glob
+import os
 import re
 from contextlib import contextmanager
+import logging
 
 HEADER_MAP = {
     'Type': 'Type', 'Tipo': 'Type',
@@ -23,6 +25,9 @@ HEADER_MAP = {
     'Estado': 'State',
     'Balance': 'Balance', 'Saldo': 'Balance'
 }
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_payee(concepto):
@@ -79,6 +84,41 @@ def append_blank_line_to_files(file_pattern):
 
 class Revolut2CSV(bg.BaseGenerator):
 
+    def __init__(self, path):
+        # Añadir una línea en blanco al final de todos los ficheros de Revolut
+        pattern = os.path.join(path, "account-statement*.csv")
+        append_blank_line_to_files(pattern)
+
+        # Localizar todos los ficheros de Revolut en el directorio
+        all_files = sorted(glob.glob(pattern), key=os.path.getmtime)
+
+        if not all_files:
+            # No hay ficheros de Revolut, dejar el comportamiento estándar (no procesa nada)
+            super(Revolut2CSV, self).__init__(path, "account-statement*.csv",
+                                              None)
+            return
+
+        # Elegimos el fichero más reciente por fecha de modificación
+        latest_file = all_files[-1]
+        latest_filename = os.path.basename(latest_file)
+
+        if len(all_files) > 1:
+            logger.info(
+                "Se han encontrado %s ficheros de Revolut, procesando sólo el más reciente: %s",
+                len(all_files),
+                latest_filename,
+            )
+
+            # Marcar el resto para que se muevan a 'processed' aunque no se procesen
+            for old_file in all_files[:-1]:
+                account_name, _ = self._readAccountName(old_file)
+                bg.BaseGenerator.processed_files.append(
+                    (old_file, account_name + "_ignored")
+                )
+
+        # Configurar BaseGenerator para que sólo procese el fichero más reciente
+        super(Revolut2CSV, self).__init__(path, latest_filename, None)
+
     def _readAccountName(self, inputExcelFile) -> tuple[str, str]:
         return "Revolut", "debit"
 
@@ -108,7 +148,4 @@ class Revolut2CSV(bg.BaseGenerator):
         csvFile['memo'] = ""
         return csvFile
 
-    def __init__(self, path):
-        append_blank_line_to_files("account-statement*.csv")
-        super(Revolut2CSV, self).__init__(path, "account-statement*.csv",
-                                          None)
+    # El __init__ personalizado está definido al inicio de la clase
