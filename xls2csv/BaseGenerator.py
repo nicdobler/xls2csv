@@ -115,8 +115,11 @@ class BaseGenerator:
                 # Agregar nombre de cuenta al nombre del archivo (sin espacios)
                 account_name_clean = account_name.replace(" ", "")
 
-                # Get creation date
-                creation_time = os.stat(file_path).st_birthtime
+                # Get creation date (or fallback to last modification time on systems
+                # without `st_birthtime`, e.g. most Linux/Docker setups)
+                stat_result = os.stat(file_path)
+                creation_time = getattr(stat_result, "st_birthtime",
+                                        stat_result.st_mtime)
                 date_str = datetime.fromtimestamp(creation_time).strftime('%y%m%d')
 
                 filename = f"{date_str}-{account_name_clean}-{filename}"
